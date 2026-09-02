@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mailias-email-router",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-02",
+  "secrets": {
+    "required": ["MAILIAS_KEY", "MAILIAS_FORWARD_TO"]
+  },
+  "vars": {
+    "MAILIAS_DOMAIN": "m.example.test"
+  }
+}
+

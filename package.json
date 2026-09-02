@@ -1,0 +1,12 @@
+{
+  "name": "mailias-monorepo",
+  "private": true,
+  "scripts": {
+    "worker:check": "pnpm --dir workers/email-router check",
+    "worker:deploy": "pnpm --dir workers/email-router deploy",
+    "worker:dev": "pnpm --dir workers/email-router dev",
+    "worker:test": "pnpm --dir workers/email-router test"
+  },
+  "packageManager": "pnpm@11.19.0"
+}
+

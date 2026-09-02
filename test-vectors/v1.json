@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "vectors": [
+    {
+      "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+      "domain": "m.example.test",
+      "label": "github",
+      "message_hex": "6d61696c6961732f7631006d2e6578616d706c652e7465737400676974687562",
+      "hmac_sha256": "de52adbcbca911cdb050f0b43ed72f82f0d6ccd8b382c532025bc114c8b8c78e",
+      "tag": "vtabvg6w",
+      "address": "github-v1-vtabvg6w@m.example.test"
+    }
+  ]
+}
