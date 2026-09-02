@@ -57,4 +57,3 @@ pub struct VerifyArgs {
     #[arg(long)]
     pub quiet: bool,
 }
-

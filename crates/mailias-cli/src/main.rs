@@ -27,9 +27,7 @@ enum AppError {
     #[error(transparent)]
     Protocol(#[from] ProtocolError),
 
-    #[error(
-        "the key was stored in pass, but the configuration could not be created: {source}"
-    )]
+    #[error("the key was stored in pass, but the configuration could not be created: {source}")]
     ConfigAfterSecret { source: ConfigError },
 }
 
@@ -68,9 +66,8 @@ fn run(cli: Cli) -> Result<ExitCode, AppError> {
             let key = load_key(&config.secret)?;
             let valid = match verify_address(&key, &config.domain, &args.address) {
                 Ok(Some(_)) => true,
-                Ok(None) | Err(ProtocolError::InvalidAddress | ProtocolError::UnsupportedVersion) => {
-                    false
-                }
+                Ok(None)
+                | Err(ProtocolError::InvalidAddress | ProtocolError::UnsupportedVersion) => false,
                 Err(error) => return Err(error.into()),
             };
             if !args.quiet {

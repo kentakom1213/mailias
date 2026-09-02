@@ -223,15 +223,16 @@ mod tests {
 
     #[test]
     fn official_test_vector_matches() {
-        let vectors: TestVectors = serde_json::from_str(include_str!(
-            "../../../test-vectors/v1.json"
-        ))
-        .unwrap();
+        let vectors: TestVectors =
+            serde_json::from_str(include_str!("../../../test-vectors/v1.json")).unwrap();
         assert_eq!(vectors.version, 1);
 
         for vector in vectors.vectors {
             let key = decode_key(&vector.key).unwrap();
-            assert_eq!(generate_tag(&key, &vector.domain, &vector.label).unwrap(), vector.tag);
+            assert_eq!(
+                generate_tag(&key, &vector.domain, &vector.label).unwrap(),
+                vector.tag
+            );
             assert_eq!(
                 generate_address(&key, &vector.domain, &vector.label).unwrap(),
                 vector.address
@@ -249,10 +250,23 @@ mod tests {
     fn labels_are_canonicalized_but_not_rewritten() {
         assert_eq!(normalize_label("GitHub-Work").unwrap(), "github-work");
         assert_eq!(normalize_label("a".repeat(48).as_str()).unwrap().len(), 48);
-        assert_eq!(normalize_label("a".repeat(49).as_str()), Err(ProtocolError::LabelTooLong));
+        assert_eq!(
+            normalize_label("a".repeat(49).as_str()),
+            Err(ProtocolError::LabelTooLong)
+        );
 
-        for invalid in ["", "-github", "github-", "github--work", "github_work", "日本語"] {
-            assert!(normalize_label(invalid).is_err(), "{invalid} should be invalid");
+        for invalid in [
+            "",
+            "-github",
+            "github-",
+            "github--work",
+            "github_work",
+            "日本語",
+        ] {
+            assert!(
+                normalize_label(invalid).is_err(),
+                "{invalid} should be invalid"
+            );
         }
     }
 
@@ -262,10 +276,14 @@ mod tests {
         let address = generate_address(&key, "m.example.test", "github").unwrap();
         let upper = address.to_ascii_uppercase();
 
-        let verified = verify_address(&key, "M.EXAMPLE.TEST", &upper).unwrap().unwrap();
+        let verified = verify_address(&key, "M.EXAMPLE.TEST", &upper)
+            .unwrap()
+            .unwrap();
         assert_eq!(verified.label, "github");
         assert_eq!(verified.address, address);
-        assert!(verify_address(&key, "example.com", &address).unwrap().is_none());
+        assert!(verify_address(&key, "example.com", &address)
+            .unwrap()
+            .is_none());
     }
 
     #[test]
@@ -273,7 +291,9 @@ mod tests {
         let key = [9_u8; KEY_BYTES];
         let address = generate_address(&key, "m.example.test", "github").unwrap();
         let modified = address.replacen("-v1-", "-v1-0", 1);
-        assert!(verify_address(&key, "m.example.test", &modified).unwrap().is_none());
+        assert!(verify_address(&key, "m.example.test", &modified)
+            .unwrap()
+            .is_none());
     }
 
     fn hex(bytes: &[u8]) -> String {

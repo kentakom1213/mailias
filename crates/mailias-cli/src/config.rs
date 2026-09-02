@@ -75,11 +75,7 @@ impl Config {
             config_version: CONFIG_VERSION,
             domain,
             secret: SecretConfig {
-                command: vec![
-                    "pass".to_owned(),
-                    "show".to_owned(),
-                    pass_entry.to_owned(),
-                ],
+                command: vec!["pass".to_owned(), "show".to_owned(), pass_entry.to_owned()],
             },
         })
     }
@@ -110,7 +106,10 @@ impl Config {
         if path.exists() {
             return Err(ConfigError::AlreadyExists(path.to_owned()));
         }
-        if let Some(parent) = path.parent().filter(|parent| !parent.as_os_str().is_empty()) {
+        if let Some(parent) = path
+            .parent()
+            .filter(|parent| !parent.as_os_str().is_empty())
+        {
             fs::create_dir_all(parent).map_err(|source| ConfigError::CreateDirectory {
                 path: parent.to_owned(),
                 source,

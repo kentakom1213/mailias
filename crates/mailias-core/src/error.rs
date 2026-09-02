@@ -26,4 +26,3 @@ pub enum ProtocolError {
     #[error("the recipient uses an unsupported mailias protocol version")]
     UnsupportedVersion,
 }
-
