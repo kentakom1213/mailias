@@ -46,10 +46,11 @@ The resulting binary is `target/release/mailias`.
 
 ## Initialize with pass
 
-The default setup generates a 32-byte random key, stores it in
-`mailias/master` using `pass`, and writes the local configuration.
+Generate a 32-byte random key, store it in `pass`, and write the local
+configuration.
 
 ```console
+mailias keygen | pass insert --multiline mailias/master
 mailias init --domain m.example.test
 ```
 
@@ -79,8 +80,8 @@ command = [
 ]
 ```
 
-Use `mailias keygen` when provisioning a key in another secret manager. This
-command intentionally writes the secret to standard output.
+`mailias keygen` intentionally writes the secret to standard output so it can be
+piped into `pass` or another secret manager.
 
 ## CLI
 

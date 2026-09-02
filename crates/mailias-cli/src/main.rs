@@ -13,7 +13,7 @@ use zeroize::Zeroizing;
 use crate::{
     cli::{Cli, Command, InitArgs},
     config::{resolve_config_path, Config, ConfigError},
-    secret::{ensure_pass_entry_absent, load_key, store_key_in_pass, SecretError},
+    secret::{load_key, SecretError},
 };
 
 #[derive(Debug, Error)]
@@ -26,9 +26,6 @@ enum AppError {
 
     #[error(transparent)]
     Protocol(#[from] ProtocolError),
-
-    #[error("the key was stored in pass, but the configuration could not be created: {source}")]
-    ConfigAfterSecret { source: ConfigError },
 }
 
 fn main() -> ExitCode {
@@ -90,17 +87,14 @@ fn init(path: &Path, args: &InitArgs) -> Result<ExitCode, AppError> {
     if path.exists() {
         return Err(ConfigError::AlreadyExists(path.to_owned()).into());
     }
-    ensure_pass_entry_absent(&args.pass_entry)?;
-
     let config = Config::for_pass(&args.domain, &args.pass_entry)?;
-    let key = generate_key();
-    store_key_in_pass(&args.pass_entry, &key)?;
-    config
-        .write_new(path)
-        .map_err(|source| AppError::ConfigAfterSecret { source })?;
+    config.write_new(path)?;
 
     println!("created configuration: {}", path.display());
-    println!("stored secret: pass {}", args.pass_entry);
+    println!(
+        "store a key with: mailias keygen | pass insert --multiline {}",
+        args.pass_entry
+    );
     Ok(ExitCode::SUCCESS)
 }
 

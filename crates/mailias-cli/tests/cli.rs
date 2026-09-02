@@ -49,6 +49,28 @@ fn keygen_emits_an_unpadded_base64url_key() {
         .stdout(predicate::str::is_match(r"^[A-Za-z0-9_-]{43}\n$").unwrap());
 }
 
+#[test]
+fn init_writes_pass_config_without_storing_a_key() {
+    let directory = tempfile::tempdir().unwrap();
+    let config = directory.path().join("config.toml");
+
+    let mut command = Command::cargo_bin("mailias").unwrap();
+    command
+        .env("MAILIAS_CONFIG", &config)
+        .args(["init", "--domain", "m.example.test"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "store a key with: mailias keygen | pass insert --multiline mailias/master",
+        ));
+
+    let contents = fs::read_to_string(config).unwrap();
+    assert!(contents.contains("domain = \"m.example.test\""));
+    assert!(contents.contains("\"pass\""));
+    assert!(contents.contains("\"show\""));
+    assert!(contents.contains("\"mailias/master\""));
+}
+
 struct Fixture {
     _directory: TempDir,
     config: std::path::PathBuf,

@@ -15,7 +15,7 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
-    /// Create a configuration and store a new key in pass.
+    /// Create a pass-backed configuration.
     Init(InitArgs),
 
     /// Generate a new 32-byte key as unpadded Base64URL.
@@ -37,7 +37,7 @@ pub struct InitArgs {
     #[arg(long)]
     pub domain: String,
 
-    /// pass entry in which the master key is stored.
+    /// pass entry from which the master key is read.
     #[arg(long, default_value = "mailias/master")]
     pub pass_entry: String,
 }
