@@ -1,8 +1,7 @@
-/target/
-/node_modules/
-/.pnpm-store/
-/.wrangler/
-/dist/
-/.dev.vars
+target/
+node_modules/
+.pnpm-store/
+.wrangler/
+dist/
+.dev.vars
 *.tmp
-
