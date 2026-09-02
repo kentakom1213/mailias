@@ -38,14 +38,16 @@ export function normalizeDomain(input: string): string {
   }
 
   const domain = input.toLowerCase();
-  const valid = domain.split(".").every(
-    (part) =>
-      part.length > 0 &&
-      part.length <= 63 &&
-      !part.startsWith("-") &&
-      !part.endsWith("-") &&
-      /^[a-z0-9-]+$/.test(part),
-  );
+  const valid = domain
+    .split(".")
+    .every(
+      (part) =>
+        part.length > 0 &&
+        part.length <= 63 &&
+        !part.startsWith("-") &&
+        !part.endsWith("-") &&
+        /^[a-z0-9-]+$/.test(part),
+    );
   if (!valid) {
     throw new Error("the domain is invalid");
   }
@@ -78,10 +80,12 @@ export async function generateTag(
   const domain = normalizeDomain(domainInput);
   const label = normalizeLabel(labelInput);
   const keyBytes = decodeKey(encodedKey);
+  const keyData = new Uint8Array(keyBytes.byteLength);
+  keyData.set(keyBytes);
   const message = ASCII_ENCODER.encode(`${CONTEXT}\0${domain}\0${label}`);
   const key = await crypto.subtle.importKey(
     "raw",
-    keyBytes,
+    keyData,
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"],
@@ -192,4 +196,3 @@ function constantTimeEqual(left: string, right: string): boolean {
 function isAscii(input: string): boolean {
   return /^[\x00-\x7f]*$/.test(input);
 }
-
