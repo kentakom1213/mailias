@@ -1,301 +1,475 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme" content="light dark">
-  <title>mailias generator</title>
-  <style>
-    :root { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; }
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; }
-    main { width: min(100%, 560px); }
-    h1 { margin: 0 0 6px; font-size: 1.8rem; }
-    .subtle { opacity: .7; margin: 0 0 24px; }
-    section { border: 1px solid color-mix(in srgb, CanvasText 18%, transparent); border-radius: 14px; padding: 18px; margin: 14px 0; }
-    label { display: block; font-weight: 650; margin: 0 0 6px; }
-    input { width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1px solid color-mix(in srgb, CanvasText 24%, transparent); border-radius: 9px; background: Canvas; color: CanvasText; font: inherit; }
-    .field + .field { margin-top: 14px; }
-    .row { display: flex; gap: 10px; margin-top: 14px; }
-    button { appearance: none; border: 1px solid color-mix(in srgb, CanvasText 24%, transparent); border-radius: 9px; padding: 10px 14px; background: Canvas; color: CanvasText; font: inherit; font-weight: 650; cursor: pointer; }
-    button.primary { background: CanvasText; color: Canvas; }
-    button:disabled { cursor: not-allowed; opacity: .5; }
-    .output { margin-top: 16px; padding: 12px; border-radius: 9px; background: color-mix(in srgb, CanvasText 7%, transparent); overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .message { min-height: 1.5em; margin-top: 10px; font-size: .92rem; }
-    .error { color: #c62828; }
-    .ok { color: #2e7d32; }
-    details { margin-top: 16px; }
-    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    footer { margin-top: 18px; opacity: .68; font-size: .86rem; }
-  </style>
-</head>
-<body>
-<main>
-  <h1>mailias</h1>
-  <p class="subtle">Stateless email alias generator. Everything happens in this browser.</p>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="color-scheme" content="light dark" />
+        <title>mailias generator</title>
+        <style>
+            :root {
+                font-family:
+                    ui-sans-serif,
+                    system-ui,
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    sans-serif;
+                line-height: 1.5;
+            }
+            body {
+                margin: 0;
+                min-height: 100vh;
+                display: grid;
+                place-items: center;
+                padding: 24px;
+                box-sizing: border-box;
+            }
+            main {
+                width: min(100%, 560px);
+            }
+            h1 {
+                margin: 0 0 6px;
+                font-size: 1.8rem;
+            }
+            .subtle {
+                opacity: 0.7;
+                margin: 0 0 24px;
+            }
+            section {
+                border: 1px solid
+                    color-mix(in srgb, CanvasText 18%, transparent);
+                border-radius: 14px;
+                padding: 18px;
+                margin: 14px 0;
+            }
+            label {
+                display: block;
+                font-weight: 650;
+                margin: 0 0 6px;
+            }
+            input {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 11px 12px;
+                border: 1px solid
+                    color-mix(in srgb, CanvasText 24%, transparent);
+                border-radius: 9px;
+                background: Canvas;
+                color: CanvasText;
+                font: inherit;
+            }
+            .field + .field {
+                margin-top: 14px;
+            }
+            .row {
+                display: flex;
+                gap: 10px;
+                margin-top: 14px;
+            }
+            button {
+                appearance: none;
+                border: 1px solid
+                    color-mix(in srgb, CanvasText 24%, transparent);
+                border-radius: 9px;
+                padding: 10px 14px;
+                background: Canvas;
+                color: CanvasText;
+                font: inherit;
+                font-weight: 650;
+                cursor: pointer;
+            }
+            button.primary {
+                background: CanvasText;
+                color: Canvas;
+            }
+            button:disabled {
+                cursor: not-allowed;
+                opacity: 0.5;
+            }
+            .output {
+                margin-top: 16px;
+                padding: 12px;
+                border-radius: 9px;
+                background: color-mix(in srgb, CanvasText 7%, transparent);
+                overflow-wrap: anywhere;
+                font-family:
+                    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            }
+            .message {
+                min-height: 1.5em;
+                margin-top: 10px;
+                font-size: 0.92rem;
+            }
+            .error {
+                color: #c62828;
+            }
+            .ok {
+                color: #2e7d32;
+            }
+            details {
+                margin-top: 16px;
+            }
+            code {
+                font-family:
+                    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            }
+            footer {
+                margin-top: 18px;
+                opacity: 0.68;
+                font-size: 0.86rem;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>mailias</h1>
+            <p class="subtle">
+                Stateless email alias generator. Everything happens in this
+                browser.
+            </p>
 
-  <section id="setupSection">
-    <h2>Setup</h2>
-    <div class="field">
-      <label for="domain">Alias domain</label>
-      <input id="domain" type="text" autocomplete="off" spellcheck="false" placeholder="m.example.com">
-    </div>
-    <div class="field">
-      <label for="masterKey">Master key</label>
-      <input id="masterKey" type="password" autocomplete="off" spellcheck="false" placeholder="Base64URL-encoded 32-byte key">
-    </div>
-    <div class="row">
-      <button id="saveSetup" class="primary" type="button">Save to this browser</button>
-    </div>
-    <div id="setupMessage" class="message" aria-live="polite"></div>
-  </section>
+            <section id="setupSection">
+                <h2>Setup</h2>
+                <div class="field">
+                    <label for="domain">Alias domain</label>
+                    <input
+                        id="domain"
+                        type="text"
+                        autocomplete="off"
+                        spellcheck="false"
+                        placeholder="m.example.com"
+                    />
+                </div>
+                <div class="field">
+                    <label for="masterKey">Master key</label>
+                    <input
+                        id="masterKey"
+                        type="password"
+                        autocomplete="off"
+                        spellcheck="false"
+                        placeholder="Base64URL-encoded 32-byte key"
+                    />
+                </div>
+                <div class="row">
+                    <button id="saveSetup" class="primary" type="button">
+                        Save to this browser
+                    </button>
+                </div>
+                <div id="setupMessage" class="message" aria-live="polite"></div>
+            </section>
 
-  <section id="generatorSection" hidden>
-    <div class="field">
-      <label for="label">Label</label>
-      <input id="label" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="github">
-    </div>
-    <div class="row">
-      <button id="generate" class="primary" type="button">Generate</button>
-      <button id="copy" type="button" disabled>Copy</button>
-    </div>
-    <div id="output" class="output" hidden></div>
-    <div id="generatorMessage" class="message" aria-live="polite"></div>
+            <section id="generatorSection" hidden>
+                <div class="field">
+                    <label for="label">Label</label>
+                    <input
+                        id="label"
+                        type="text"
+                        autocomplete="off"
+                        autocapitalize="none"
+                        spellcheck="false"
+                        placeholder="github"
+                    />
+                </div>
+                <div class="row">
+                    <button id="generate" class="primary" type="button">
+                        Generate
+                    </button>
+                    <button id="copy" type="button" disabled>Copy</button>
+                </div>
+                <div id="output" class="output" hidden></div>
+                <div
+                    id="generatorMessage"
+                    class="message"
+                    aria-live="polite"
+                ></div>
 
-    <details>
-      <summary>Settings</summary>
-      <p>Domain: <code id="currentDomain"></code></p>
-      <p>Format: <code>v1</code></p>
-      <button id="reset" type="button">Forget this browser</button>
-    </details>
-  </section>
+                <details>
+                    <summary>Settings</summary>
+                    <p>Domain: <code id="currentDomain"></code></p>
+                    <p>Format: <code>v1</code></p>
+                    <button id="reset" type="button">
+                        Forget this browser
+                    </button>
+                </details>
+            </section>
 
-  <footer>No network requests, analytics, external scripts, or alias history.</footer>
-</main>
+            <footer>
+                No network requests, analytics, external scripts, or alias
+                history.
+            </footer>
+        </main>
 
-<script>
-"use strict";
+        <script>
+            "use strict";
 
-const DB_NAME = "mailias";
-const DB_VERSION = 1;
-const STORE = "keys";
-const KEY_ID = "master";
-const DOMAIN_STORAGE_KEY = "mailias.domain";
+            const DB_NAME = "mailias";
+            const DB_VERSION = 1;
+            const STORE = "keys";
+            const KEY_ID = "master";
+            const DOMAIN_STORAGE_KEY = "mailias.domain";
 
-const ALPHABET = "023456789abcdefghjkmnpqrstuvwxyz";
-const LABEL_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const DOMAIN_RE = /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/;
-const encoder = new TextEncoder();
+            const ALPHABET = "023456789abcdefghjkmnpqrstuvwxyz";
+            const LABEL_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+            const DOMAIN_RE = /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/;
+            const encoder = new TextEncoder();
 
-const el = (id) => document.getElementById(id);
-const setupSection = el("setupSection");
-const generatorSection = el("generatorSection");
-const domainInput = el("domain");
-const masterKeyInput = el("masterKey");
-const setupMessage = el("setupMessage");
-const labelInput = el("label");
-const output = el("output");
-const copyButton = el("copy");
-const generatorMessage = el("generatorMessage");
-const currentDomain = el("currentDomain");
+            const el = (id) => document.getElementById(id);
+            const setupSection = el("setupSection");
+            const generatorSection = el("generatorSection");
+            const domainInput = el("domain");
+            const masterKeyInput = el("masterKey");
+            const setupMessage = el("setupMessage");
+            const labelInput = el("label");
+            const output = el("output");
+            const copyButton = el("copy");
+            const generatorMessage = el("generatorMessage");
+            const currentDomain = el("currentDomain");
 
-function setMessage(node, text, kind = "") {
-  node.textContent = text;
-  node.className = "message" + (kind ? " " + kind : "");
-}
+            function setMessage(node, text, kind = "") {
+                node.textContent = text;
+                node.className = "message" + (kind ? " " + kind : "");
+            }
 
-function asciiLower(value, fieldName) {
-  if (!/^[\x00-\x7f]*$/.test(value)) {
-    throw new Error(`${fieldName} must contain ASCII characters only.`);
-  }
-  return value.replace(/[A-Z]/g, c => c.toLowerCase());
-}
+            function asciiLower(value, fieldName) {
+                if (!/^[\x00-\x7f]*$/.test(value)) {
+                    throw new Error(
+                        `${fieldName} must contain ASCII characters only.`,
+                    );
+                }
+                return value.replace(/[A-Z]/g, (c) => c.toLowerCase());
+            }
 
-function canonicalDomain(value) {
-  const domain = asciiLower(value, "Domain");
-  if (!domain || !DOMAIN_RE.test(domain)) {
-    throw new Error("Enter an ASCII domain such as m.example.com.");
-  }
-  return domain;
-}
+            function canonicalDomain(value) {
+                const domain = asciiLower(value, "Domain");
+                if (!domain || !DOMAIN_RE.test(domain)) {
+                    throw new Error(
+                        "Enter an ASCII domain such as m.example.com.",
+                    );
+                }
+                return domain;
+            }
 
-function canonicalLabel(value) {
-  const label = asciiLower(value, "Label");
-  if (label.length < 1 || label.length > 48 || !LABEL_RE.test(label)) {
-    throw new Error("Label must match [a-z0-9]+(-[a-z0-9]+)* and be at most 48 characters.");
-  }
-  return label;
-}
+            function canonicalLabel(value) {
+                const label = asciiLower(value, "Label");
+                if (
+                    label.length < 1 ||
+                    label.length > 48 ||
+                    !LABEL_RE.test(label)
+                ) {
+                    throw new Error(
+                        "Label must match [a-z0-9]+(-[a-z0-9]+)* and be at most 48 characters.",
+                    );
+                }
+                return label;
+            }
 
-function decodeBase64Url(value) {
-  if (!/^[A-Za-z0-9_-]{43}$/.test(value)) {
-    throw new Error("Master key must be an unpadded Base64URL encoding of exactly 32 bytes.");
-  }
-  const base64 = value.replace(/-/g, "+").replace(/_/g, "/") + "=";
-  const binary = atob(base64);
-  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
-  if (bytes.length !== 32) throw new Error("Master key must decode to exactly 32 bytes.");
-  return bytes;
-}
+            function decodeBase64Url(value) {
+                if (!/^[A-Za-z0-9_-]{43}$/.test(value)) {
+                    throw new Error(
+                        "Master key must be an unpadded Base64URL encoding of exactly 32 bytes.",
+                    );
+                }
+                const base64 =
+                    value.replace(/-/g, "+").replace(/_/g, "/") + "=";
+                const binary = atob(base64);
+                const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+                if (bytes.length !== 32)
+                    throw new Error(
+                        "Master key must decode to exactly 32 bytes.",
+                    );
+                return bytes;
+            }
 
-function openDb() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE);
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
+            function openDb() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(DB_NAME, DB_VERSION);
+                    request.onupgradeneeded = () => {
+                        const db = request.result;
+                        if (!db.objectStoreNames.contains(STORE))
+                            db.createObjectStore(STORE);
+                    };
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
 
-async function saveKey(key) {
-  const db = await openDb();
-  await new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, "readwrite");
-    tx.objectStore(STORE).put(key, KEY_ID);
-    tx.oncomplete = resolve;
-    tx.onerror = () => reject(tx.error);
-  });
-  db.close();
-}
+            async function saveKey(key) {
+                const db = await openDb();
+                await new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE, "readwrite");
+                    tx.objectStore(STORE).put(key, KEY_ID);
+                    tx.oncomplete = resolve;
+                    tx.onerror = () => reject(tx.error);
+                });
+                db.close();
+            }
 
-async function loadKey() {
-  const db = await openDb();
-  const key = await new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, "readonly");
-    const request = tx.objectStore(STORE).get(KEY_ID);
-    request.onsuccess = () => resolve(request.result ?? null);
-    request.onerror = () => reject(request.error);
-  });
-  db.close();
-  return key;
-}
+            async function loadKey() {
+                const db = await openDb();
+                const key = await new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE, "readonly");
+                    const request = tx.objectStore(STORE).get(KEY_ID);
+                    request.onsuccess = () => resolve(request.result ?? null);
+                    request.onerror = () => reject(request.error);
+                });
+                db.close();
+                return key;
+            }
 
-async function clearKey() {
-  const db = await openDb();
-  await new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE, "readwrite");
-    tx.objectStore(STORE).delete(KEY_ID);
-    tx.oncomplete = resolve;
-    tx.onerror = () => reject(tx.error);
-  });
-  db.close();
-}
+            async function clearKey() {
+                const db = await openDb();
+                await new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE, "readwrite");
+                    tx.objectStore(STORE).delete(KEY_ID);
+                    tx.oncomplete = resolve;
+                    tx.onerror = () => reject(tx.error);
+                });
+                db.close();
+            }
 
-async function importMasterKey(bytes) {
-  return crypto.subtle.importKey("raw", bytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-}
+            async function importMasterKey(bytes) {
+                return crypto.subtle.importKey(
+                    "raw",
+                    bytes,
+                    { name: "HMAC", hash: "SHA-256" },
+                    false,
+                    ["sign"],
+                );
+            }
 
-function encodeTag(firstFiveBytes) {
-  let bits = 0n;
-  for (const byte of firstFiveBytes) bits = (bits << 8n) | BigInt(byte);
-  let tag = "";
-  for (let shift = 35n; shift >= 0n; shift -= 5n) {
-    tag += ALPHABET[Number((bits >> shift) & 31n)];
-  }
-  return tag;
-}
+            function encodeTag(firstFiveBytes) {
+                let bits = 0n;
+                for (const byte of firstFiveBytes)
+                    bits = (bits << 8n) | BigInt(byte);
+                let tag = "";
+                for (let shift = 35n; shift >= 0n; shift -= 5n) {
+                    tag += ALPHABET[Number((bits >> shift) & 31n)];
+                }
+                return tag;
+            }
 
-async function deriveAlias(key, domain, label) {
-  const message = encoder.encode(`mailias/v1\0${domain}\0${label}`);
-  const mac = new Uint8Array(await crypto.subtle.sign("HMAC", key, message));
-  const tag = encodeTag(mac.slice(0, 5));
-  return `${label}-v1-${tag}@${domain}`;
-}
+            async function deriveAlias(key, domain, label) {
+                const message = encoder.encode(
+                    `mailias/v1\0${domain}\0${label}`,
+                );
+                const mac = new Uint8Array(
+                    await crypto.subtle.sign("HMAC", key, message),
+                );
+                const tag = encodeTag(mac.slice(0, 5));
+                return `${label}-v1-${tag}@${domain}`;
+            }
 
-async function selfTest() {
-  const bytes = Uint8Array.from({ length: 32 }, (_, i) => i);
-  const key = await importMasterKey(bytes);
-  const alias = await deriveAlias(key, "m.example.test", "github");
-  if (alias !== "github-v1-vtabvg6w@m.example.test") throw new Error(`Self-test failed: got ${alias}`);
-}
+            async function selfTest() {
+                const bytes = Uint8Array.from({ length: 32 }, (_, i) => i);
+                const key = await importMasterKey(bytes);
+                const alias = await deriveAlias(
+                    key,
+                    "m.example.test",
+                    "github",
+                );
 
-async function refreshUi() {
-  const domain = localStorage.getItem(DOMAIN_STORAGE_KEY);
-  const key = await loadKey();
-  if (domain && key) {
-    setupSection.hidden = true;
-    generatorSection.hidden = false;
-    currentDomain.textContent = domain;
-    labelInput.focus();
-  } else {
-    setupSection.hidden = false;
-    generatorSection.hidden = true;
-    if (domain) domainInput.value = domain;
-  }
-}
+                if (alias !== "github-v1-vtabvg6w@m.example.test") {
+                    throw new Error(`Self-test failed: got ${alias}`);
+                }
+            }
 
-el("saveSetup").addEventListener("click", async () => {
-  try {
-    setMessage(setupMessage, "");
-    const domain = canonicalDomain(domainInput.value);
-    const rawKey = decodeBase64Url(masterKeyInput.value.trim());
-    const key = await importMasterKey(rawKey);
-    await saveKey(key);
-    localStorage.setItem(DOMAIN_STORAGE_KEY, domain);
-    rawKey.fill(0);
-    masterKeyInput.value = "";
-    setMessage(setupMessage, "Saved to this browser.", "ok");
-    await refreshUi();
-  } catch (error) {
-    setMessage(setupMessage, error.message, "error");
-  }
-});
+            async function refreshUi() {
+                const domain = localStorage.getItem(DOMAIN_STORAGE_KEY);
+                const key = await loadKey();
+                if (domain && key) {
+                    setupSection.hidden = true;
+                    generatorSection.hidden = false;
+                    currentDomain.textContent = domain;
+                    labelInput.focus();
+                } else {
+                    setupSection.hidden = false;
+                    generatorSection.hidden = true;
+                    if (domain) domainInput.value = domain;
+                }
+            }
 
-el("generate").addEventListener("click", async () => {
-  try {
-    setMessage(generatorMessage, "");
-    const key = await loadKey();
-    const domain = canonicalDomain(localStorage.getItem(DOMAIN_STORAGE_KEY) || "");
-    const label = canonicalLabel(labelInput.value);
-    if (!key) throw new Error("No master key is stored in this browser.");
-    const alias = await deriveAlias(key, domain, label);
-    output.textContent = alias;
-    output.hidden = false;
-    copyButton.disabled = false;
-  } catch (error) {
-    output.hidden = true;
-    copyButton.disabled = true;
-    setMessage(generatorMessage, error.message, "error");
-  }
-});
+            el("saveSetup").addEventListener("click", async () => {
+                try {
+                    setMessage(setupMessage, "");
+                    const domain = canonicalDomain(domainInput.value);
+                    const rawKey = decodeBase64Url(masterKeyInput.value.trim());
+                    const key = await importMasterKey(rawKey);
+                    await saveKey(key);
+                    localStorage.setItem(DOMAIN_STORAGE_KEY, domain);
+                    rawKey.fill(0);
+                    masterKeyInput.value = "";
+                    setMessage(setupMessage, "Saved to this browser.", "ok");
+                    await refreshUi();
+                } catch (error) {
+                    setMessage(setupMessage, error.message, "error");
+                }
+            });
 
-copyButton.addEventListener("click", async () => {
-  try {
-    await navigator.clipboard.writeText(output.textContent);
-    setMessage(generatorMessage, "Copied.", "ok");
-  } catch {
-    setMessage(generatorMessage, "Clipboard access failed. Select and copy the address manually.", "error");
-  }
-});
+            el("generate").addEventListener("click", async () => {
+                try {
+                    setMessage(generatorMessage, "");
+                    const key = await loadKey();
+                    const domain = canonicalDomain(
+                        localStorage.getItem(DOMAIN_STORAGE_KEY) || "",
+                    );
+                    const label = canonicalLabel(labelInput.value);
+                    if (!key)
+                        throw new Error(
+                            "No master key is stored in this browser.",
+                        );
+                    const alias = await deriveAlias(key, domain, label);
+                    output.textContent = alias;
+                    output.hidden = false;
+                    copyButton.disabled = false;
+                } catch (error) {
+                    output.hidden = true;
+                    copyButton.disabled = true;
+                    setMessage(generatorMessage, error.message, "error");
+                }
+            });
 
-el("reset").addEventListener("click", async () => {
-  await clearKey();
-  localStorage.removeItem(DOMAIN_STORAGE_KEY);
-  output.hidden = true;
-  copyButton.disabled = true;
-  domainInput.value = "";
-  masterKeyInput.value = "";
-  labelInput.value = "";
-  setMessage(setupMessage, "");
-  setMessage(generatorMessage, "");
-  await refreshUi();
-});
+            copyButton.addEventListener("click", async () => {
+                try {
+                    await navigator.clipboard.writeText(output.textContent);
+                    setMessage(generatorMessage, "Copied.", "ok");
+                } catch {
+                    setMessage(
+                        generatorMessage,
+                        "Clipboard access failed. Select and copy the address manually.",
+                        "error",
+                    );
+                }
+            });
 
-labelInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") el("generate").click();
-});
+            el("reset").addEventListener("click", async () => {
+                await clearKey();
+                localStorage.removeItem(DOMAIN_STORAGE_KEY);
+                output.hidden = true;
+                copyButton.disabled = true;
+                domainInput.value = "";
+                masterKeyInput.value = "";
+                labelInput.value = "";
+                setMessage(setupMessage, "");
+                setMessage(generatorMessage, "");
+                await refreshUi();
+            });
 
-(async () => {
-  try {
-    if (!window.crypto?.subtle || !window.indexedDB) throw new Error("This browser does not support the required WebCrypto/IndexedDB APIs.");
-    await selfTest();
-    await refreshUi();
-  } catch (error) {
-    document.body.textContent = `mailias generator could not start: ${error.message}`;
-  }
-})();
-</script>
-</body>
+            labelInput.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") el("generate").click();
+            });
+
+            (async () => {
+                try {
+                    if (!window.crypto?.subtle || !window.indexedDB)
+                        throw new Error(
+                            "This browser does not support the required WebCrypto/IndexedDB APIs.",
+                        );
+                    await selfTest();
+                    await refreshUi();
+                } catch (error) {
+                    document.body.textContent = `mailias generator could not start: ${error.message}`;
+                }
+            })();
+        </script>
+    </body>
 </html>
