@@ -1,14 +1,78 @@
 # mailias
 
-`mailias` generates deterministic, HMAC-verified email aliases and validates
-them in a Cloudflare Email Worker without storing an issued-alias database.
+`mailias` generates deterministic email aliases authenticated with HMAC and
+validates them in a Cloudflare Email Worker.
 
 ```console
 $ mailias gen github
 github-v1-vtabvg6w@m.example.test
 ```
 
-The project is currently at an initial `v0.1` implementation stage.
+No database of issued aliases is required. Given the same secret key, domain,
+and label, `mailias` always generates the same address.
+
+> [!WARNING]
+> `mailias` is experimental and under active development.
+> The CLI, configuration format, and deployment workflow may change before the
+> first stable release.
+
+## How it works
+
+A mail alias consists of a human-readable label and a short authentication tag:
+
+```text
+<label>-v1-<tag>@<domain>
+```
+
+For example:
+
+```text
+github-v1-vtabvg6w@m.example.test
+```
+
+The tag is derived from the secret key, domain, and label using HMAC-SHA-256.
+
+```text
+secret key
+    │
+    ├── domain: m.example.test
+    └── label:  github
+             │
+             ▼
+github-v1-vtabvg6w@m.example.test
+```
+
+Incoming mail is handled by a Cloudflare Email Worker. The Worker recomputes
+the expected tag from the recipient address and forwards the message only when
+the tag is valid.
+
+```text
+incoming email
+      │
+      ▼
+Cloudflare Email Worker
+      │
+      ├── valid HMAC tag ──► forward
+      │
+      └── invalid tag ─────► drop
+```
+
+The CLI and Worker share a secret key, but neither needs a database containing
+every generated alias.
+
+## Status
+
+The current implementation includes:
+
+- deterministic alias generation
+- HMAC-based alias verification
+- local CLI configuration
+- command-based secret loading
+- browser-based alias generation
+- Cloudflare Email Worker integration
+- shared Rust/TypeScript protocol test vectors
+
+There is no alias database, hosted control plane, or synchronization service.
 
 ## Repository layout
 
@@ -16,47 +80,64 @@ The project is currently at an initial `v0.1` implementation stage.
 crates/mailias-core/       Rust protocol implementation
 crates/mailias-cli/        mailias command-line application
 workers/email-router/      Cloudflare Email Worker
+docs/                      browser-based Web UI
 spec/v1.md                 byte-level protocol specification
 test-vectors/v1.json       shared Rust/TypeScript vectors
 ```
 
 ## Protocol
 
-Addresses use this format:
+Addresses use the following format:
 
 ```text
 <label>-v1-<tag>@<domain>
 ```
 
-The `v1` tag is the first 40 bits of HMAC-SHA-256 over:
+The `v1` tag is derived from the first 40 bits of HMAC-SHA-256 over:
 
 ```text
 "mailias/v1" || 0x00 || domain || 0x00 || label
 ```
 
-See [`spec/v1.md`](spec/v1.md) for the canonical definition.
+See [`spec/v1.md`](spec/v1.md) for the canonical byte-level definition.
 
-## Build the CLI
+## Install the CLI
+
+From a local checkout:
 
 ```console
-cargo build --release -p mailias
+cargo install --path crates/mailias-cli
 ```
 
-The resulting binary is `target/release/mailias`.
+Then:
 
-## Initialize with pass
+```console
+mailias gen github
+```
 
-Generate a 32-byte random key, store it in `pass`, and write the local
-configuration.
+## Initialize with `pass`
+
+Generate a random 32-byte master key, store it in `pass`, and create the local
+configuration:
 
 ```console
 mailias keygen | pass insert --multiline mailias/master
 mailias init --domain m.example.test
 ```
 
-The default configuration path is
-`$XDG_CONFIG_HOME/mailias/config.toml`, falling back to
-`~/.config/mailias/config.toml`.
+The default configuration path is:
+
+```text
+$XDG_CONFIG_HOME/mailias/config.toml
+```
+
+falling back to:
+
+```text
+~/.config/mailias/config.toml
+```
+
+A typical configuration is:
 
 ```toml
 config_version = 1
@@ -66,9 +147,10 @@ domain = "m.example.test"
 command = ["pass", "show", "mailias/master"]
 ```
 
-The runtime secret loader is command-based rather than pass-specific. For
-example, 1Password CLI can be configured as follows after storing a key in the
-referenced field:
+The secret loader is command-based rather than specific to `pass`. Any command
+that writes the key to standard output can be used.
+
+For example, 1Password CLI can be configured as follows:
 
 ```toml
 [secret]
@@ -80,8 +162,10 @@ command = [
 ]
 ```
 
-`mailias keygen` intentionally writes the secret to standard output so it can be
-piped into `pass` or another secret manager.
+`mailias keygen` writes the generated secret to standard output so that it can
+be piped directly into a secret manager.
+
+Do not store the master key in the repository or commit it to version control.
 
 ## CLI
 
@@ -94,26 +178,73 @@ mailias verify --quiet <address>
 mailias doctor
 ```
 
-`gen` writes only the generated address to standard output. `verify` exits with
-status `0` for a valid alias, `1` for an invalid alias, and `2` for an
-operational error.
+Generate an alias:
+
+```console
+$ mailias gen github
+github-v1-vtabvg6w@m.example.test
+```
+
+`gen` writes only the generated address to standard output, making it suitable
+for scripts and command substitution.
+
+`verify` uses the following exit codes:
+
+```text
+0   valid alias
+1   invalid alias
+2   operational error
+```
+
+## Web UI
+
+`mailias` also includes a small browser-based UI under [`docs/`](docs/).
+
+The Web UI can:
+
+- accept an existing mailias master key
+- generate a new 32-byte master key in the browser
+- generate deterministic aliases from a domain and label
+- reproduce aliases generated by the CLI
+
+Key generation uses the browser's cryptographically secure random number
+generator and produces the same Base64URL-encoded key format as
+`mailias keygen`.
+
+Alias generation is performed entirely in the browser. The master key does not
+need to be sent to a mailias server or stored in an issued-alias database.
+
+The Web UI is not a secret manager. Users should keep a backup of the master
+key in a password manager or another appropriate secret-storage system.
+
+The contents of `docs/` can be served directly as a static site, including
+through GitHub Pages.
 
 ## Email Worker
 
-Install JavaScript dependencies and run the checks:
+Install the JavaScript dependencies:
 
 ```console
 pnpm install
+```
+
+Run the Worker tests and checks:
+
+```console
 pnpm worker:test
 pnpm worker:check
 ```
 
-Configure the two Worker secrets:
+Configure the master key as a Worker secret:
 
 ```console
 pass show mailias/master |
   pnpm --dir workers/email-router wrangler secret put MAILIAS_KEY
+```
 
+Configure the forwarding destination:
+
+```console
 printf '%s' 'destination@example.com' |
   pnpm --dir workers/email-router wrangler secret put MAILIAS_FORWARD_TO
 ```
@@ -124,20 +255,111 @@ Then deploy:
 pnpm worker:deploy
 ```
 
-Finally, configure the `m.example.test` catch-all Email Routing rule to send mail to
-the deployed Worker. Valid aliases are forwarded with `X-Mailias-Label` and
-`X-Mailias-Version` headers. Invalid aliases and internal verification failures
-are silently dropped.
+Finally, configure the catch-all Email Routing rule for `m.example.test` to
+send mail to the deployed Worker.
+
+For a valid alias, the Worker forwards the message and adds:
+
+```text
+X-Mailias-Label
+X-Mailias-Version
+```
+
+Invalid aliases and internal verification failures are silently dropped.
 
 ## Revocation
 
-`v0.1` has no alias database or CLI revocation command. Revoke an individual
-address by creating a higher-priority `Drop` rule for that exact address in the
-Cloudflare Email Routing dashboard.
+To revoke a single leaked address, create a higher-priority `Drop` rule for
+that exact recipient in the Cloudflare Email Routing configuration.
 
-## Security boundary
+A replacement can then be generated with another label:
 
-`mailias` prevents arbitrary recipients from being accepted without a valid
-HMAC tag. It does not protect an alias after the complete address has leaked,
-provide outbound aliases, encrypt message contents, or replace spam filtering.
+```console
+mailias gen github-2
+```
 
+This produces a different deterministic address without changing the master
+key.
+
+Revocation state is managed outside the alias-generation protocol.
+
+## Security model
+
+The security of `mailias` depends on keeping the master key secret.
+
+The protocol and implementation are public by design. Knowing how aliases are
+constructed must not be sufficient to generate valid aliases without the
+secret key.
+
+`mailias` is intended to prevent arbitrary or guessed recipient addresses from
+being accepted by the Email Worker without a valid HMAC tag.
+
+It does **not**:
+
+- protect an alias after the complete address has leaked
+- automatically revoke leaked aliases
+- hide the human-readable label
+- provide outbound or sender aliases
+- encrypt email contents
+- provide end-to-end email security
+- replace spam or phishing filtering
+- protect against compromise of the master key or Worker environment
+
+Because aliases are deterministic, anyone who obtains the master key can
+recompute aliases for known domains and labels.
+
+Treat the master key as a long-lived secret and keep a backup in a trusted
+secret-storage system.
+
+If the master key is exposed, rotate it and treat aliases derived from the old
+key as compromised.
+
+## Development
+
+Build the CLI without installing it:
+
+```console
+cargo build --release -p mailias
+```
+
+Run the Rust tests:
+
+```console
+cargo test --workspace
+```
+
+Run the Worker tests and checks:
+
+```console
+pnpm worker:test
+pnpm worker:check
+```
+
+The protocol implementations are tested against shared vectors in:
+
+```text
+test-vectors/v1.json
+```
+
+Rust and TypeScript implementations should produce identical results for every
+protocol test vector.
+
+Protocol changes should update:
+
+```text
+spec/v1.md
+test-vectors/v1.json
+```
+
+as appropriate.
+
+Changes that alter existing `v1` alias generation or verification behavior
+should use a new protocol version.
+
+## Contributing
+
+Issues, bug reports, design feedback, and implementation improvements are
+welcome.
+
+For protocol-related changes, please describe their compatibility and security
+implications.
