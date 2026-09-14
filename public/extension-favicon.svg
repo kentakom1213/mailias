@@ -1,20 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="mailias extension">
-  <rect width="128" height="128" rx="28" fill="#F6821F"/>
-  <path d="M28 28h72a8 8 0 0 1 8 8v34a8 8 0 0 1-8 8H28a8 8 0 0 1-8-8V36a8 8 0 0 1 8-8Z" fill="none" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
-  <path d="m25 36 39 29 39-29" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M28 97h43" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
-  <path d="m64 86 13 11-13 11" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="101" cy="100" r="22" fill="#C85F11" stroke="#fff" stroke-width="4"/>
-  <g fill="#fff" transform="translate(101 100)">
-    <rect x="-4" y="-17" width="8" height="8" rx="2"/>
-    <rect x="-4" y="9" width="8" height="8" rx="2"/>
-    <rect x="9" y="-4" width="8" height="8" rx="2"/>
-    <rect x="-17" y="-4" width="8" height="8" rx="2"/>
-    <rect x="-4" y="-17" width="8" height="8" rx="2" transform="rotate(45)"/>
-    <rect x="-4" y="-17" width="8" height="8" rx="2" transform="rotate(90)"/>
-    <rect x="-4" y="-17" width="8" height="8" rx="2" transform="rotate(135)"/>
-    <rect x="-4" y="-17" width="8" height="8" rx="2" transform="rotate(225)"/>
-    <circle r="10" fill="none" stroke="#fff" stroke-width="5"/>
-    <circle r="3"/>
-  </g>
+  <rect x="14" y="26" width="94" height="70" rx="12" fill="#163B67"/>
+  <path d="M17 32 61 65a6 6 0 0 0 7 0l37-31" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="95" cy="91" r="28" fill="#1677F0" stroke="#fff" stroke-width="5"/>
+  <text x="95" y="105" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="44" font-weight="700" fill="#fff">@</text>
 </svg>
