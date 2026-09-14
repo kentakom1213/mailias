@@ -46,6 +46,7 @@ const japanese: Record<string, string> = {
   "step4.recoveryKey": "リカバリーキー",
   "step4.copy": "コピー",
   "step4.help": "ブラウザ拡張の設定画面では，パスワードマネージャーが入力できない場合があります．必要ならキーをコピーして手動保存してください．通常のタブで開く Worker ページにも，キーを送信しないパスワードマネージャー用の補助欄があります．",
+  "step4.openHelper": "Worker のセットアップ補助を開く",
   "step4.saved": "パスワードマネージャーに保存しました",
 
   "step5.kicker": "ステップ 5 / 7",
@@ -57,6 +58,7 @@ const japanese: Record<string, string> = {
   "step5.instruction4": "確認済みの転送先メールアドレスを <code>FORWARD_TO</code> として通常の <strong>Variable</strong> に追加します．これは Secret ではありません．",
   "step5.instruction5": "Cloudflare で <strong>Deploy</strong> を選択します．",
   "step5.open": "Cloudflare Workers を開く",
+  "step5.openHelper": "Worker のセットアップ補助を開く",
   "step5.reachable": "Worker に接続可能",
   "step5.match": "リカバリーキーが一致",
   "step5.check": "Worker の設定を確認",
