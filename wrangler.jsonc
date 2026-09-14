@@ -7,8 +7,5 @@
   "observability": {
     "enabled": true,
     "logs": { "head_sampling_rate": 1 }
-  },
-  "secrets": {
-    "required": ["MAILIAS_SECRET", "FORWARD_TO"]
   }
 }
