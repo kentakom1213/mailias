@@ -9,53 +9,92 @@
   <body class="options">
     <header class="page-header"><div class="page-width"><div class="page-title">mailias</div><div class="page-subtitle">Extension settings</div></div></header>
     <main class="page-width settings-page">
-      <section class="settings-section" id="current"><h2 class="section-title">Current configuration</h2><div id="status">Not configured</div></section>
+      <div id="setup-view">
+        <section class="settings-section">
+          <h2 class="section-title">Setup</h2>
+          <p class="setting-help">Complete each step below．When every status is ready，mailias switches to alias management until you reset the extension．</p>
+          <div class="setup-status-list" id="setup-status-list">
+            <div class="setup-status-row"><span>Recovery key</span><span id="status-key">Not ready</span></div>
+            <div class="setup-status-row"><span>Worker URL</span><span id="status-worker">Not ready</span></div>
+            <div class="setup-status-row"><span>Worker recovery key</span><span id="status-worker-secret">Not checked</span></div>
+            <div class="setup-status-row"><span>Forwarding address</span><span id="status-forward">Not checked</span></div>
+            <div class="setup-status-row"><span>Recovery key match</span><span id="status-match">Not checked</span></div>
+            <div class="setup-status-row"><span>Email Routing</span><span id="status-routing">Not confirmed</span></div>
+          </div>
+        </section>
 
-      <p id="setup-locked" class="hidden" role="status">Setup is complete．Reset the extension to change the mail domain or recovery key．</p>
-      <fieldset class="settings-section hidden" id="new-setup" disabled>
-        <h2 class="section-title">New setup</h2>
-        <p class="setting-help">Create a recovery key locally．The key never leaves this extension unless you copy it．</p>
-        <label class="field-label" for="new-domain">Mail domain</label>
-        <input class="text-input" id="new-domain" placeholder="m.example.com" autocomplete="off" spellcheck="false" />
-        <button class="button primary" id="generate">Generate recovery key</button>
-        <div id="backup-step" class="hidden inline-panel stack">
-          <div class="warning-box"><strong>This key cannot be read back from the extension．</strong> Save it in your password manager before continuing．It is the only recovery copy．</div>
-          <label class="field-label" for="generated-secret">Recovery key</label>
-          <div class="row-actions"><input class="text-input" id="generated-secret" type="password" readonly /><button class="button primary" id="copy-secret" type="button">Copy</button></div>
-          <button class="button primary" id="saved" type="button">I saved it in my password manager</button>
-        </div>
-        <div id="verify-step" class="hidden inline-panel stack">
-          <p class="setting-help">The displayed key has been cleared．Paste it back from your password manager to verify the backup．</p>
-          <label class="field-label" for="verify-secret">Recovery key from password manager</label>
-          <input class="text-input" id="verify-secret" type="password" autocomplete="off" />
-          <button class="button primary" id="verify" type="button">Verify backup and finish setup</button>
-        </div>
-      </fieldset>
+        <fieldset class="settings-section hidden" id="new-setup" disabled>
+          <h2 class="section-title">1．Create recovery key</h2>
+          <p class="setting-help">Create a recovery key locally．The key never leaves this extension unless you copy it．</p>
+          <label class="field-label" for="new-domain">Mail domain</label>
+          <input class="text-input" id="new-domain" placeholder="m.example.com" autocomplete="off" spellcheck="false" />
+          <button class="button primary" id="generate">Generate recovery key</button>
+          <div id="backup-step" class="hidden inline-panel stack">
+            <div class="warning-box"><strong>This key cannot be read back from the extension．</strong> Save it in your password manager before continuing．It is the only recovery copy．</div>
+            <label class="field-label" for="generated-secret">Recovery key</label>
+            <div class="row-actions"><input class="text-input" id="generated-secret" type="password" readonly /><button class="button primary" id="copy-secret" type="button">Copy</button></div>
+            <button class="button primary" id="saved" type="button">I saved it in my password manager</button>
+          </div>
+          <div id="verify-step" class="hidden inline-panel stack">
+            <p class="setting-help">The displayed key has been cleared．Paste it back from your password manager to verify the backup．</p>
+            <label class="field-label" for="verify-secret">Recovery key from password manager</label>
+            <input class="text-input" id="verify-secret" type="password" autocomplete="off" />
+            <button class="button primary" id="verify" type="button">Verify backup</button>
+          </div>
+        </fieldset>
 
-      <fieldset class="settings-section hidden" id="restore-setup" disabled>
-        <h2 class="section-title">Restore existing setup</h2>
-        <p class="setting-help">Use the recovery key stored in your password manager．</p>
-        <label class="field-label" for="restore-domain">Mail domain</label>
-        <input class="text-input" id="restore-domain" placeholder="m.example.com" autocomplete="off" spellcheck="false" />
-        <label class="field-label" for="restore-secret">Recovery key</label>
-        <input class="text-input" id="restore-secret" type="password" autocomplete="off" />
-        <button class="button primary" id="restore">Restore</button>
-      </fieldset>
+        <fieldset class="settings-section hidden" id="restore-setup" disabled>
+          <h2 class="section-title">Restore existing setup</h2>
+          <p class="setting-help">Use the recovery key stored in your password manager．</p>
+          <label class="field-label" for="restore-domain">Mail domain</label>
+          <input class="text-input" id="restore-domain" placeholder="m.example.com" autocomplete="off" spellcheck="false" />
+          <label class="field-label" for="restore-secret">Recovery key</label>
+          <input class="text-input" id="restore-secret" type="password" autocomplete="off" />
+          <button class="button primary" id="restore">Restore</button>
+        </fieldset>
 
-      <section class="settings-section">
-        <h2 class="section-title">Cloudflare Worker</h2>
-        <label class="field-label" for="worker-origin">Worker URL</label>
-        <input class="text-input" id="worker-origin" type="url" placeholder="https://mailias.example.workers.dev" />
-        <div class="row-actions"><button class="button primary" id="save-worker">Save URL</button><button id="check-worker" class="button secondary">Check setup</button></div>
-        <pre id="health" class="result"></pre>
-      </section>
+        <section class="settings-section" id="worker-setup">
+          <h2 class="section-title">2．Deploy and connect the Worker</h2>
+          <p class="setting-help">Deploy first，then configure the runtime bindings in Cloudflare．The extension does not store a Cloudflare API token．</p>
+          <div class="row-actions">
+            <a class="button primary button-link" href="https://deploy.workers.cloudflare.com/?url=https://github.com/kentakom1213/mailias" target="_blank" rel="noreferrer">Deploy to Cloudflare</a>
+            <a class="button secondary button-link" href="https://dash.cloudflare.com/" target="_blank" rel="noreferrer">Open Cloudflare dashboard</a>
+          </div>
+          <p class="setting-help">After deployment，set <code>MAILIAS_SECRET</code> from your password manager and <code>FORWARD_TO</code> to a verified Email Routing destination．</p>
+          <label class="field-label" for="worker-origin">Worker URL</label>
+          <input class="text-input" id="worker-origin" type="url" placeholder="https://mailias.example.workers.dev" />
+          <div class="row-actions"><button class="button primary" id="save-worker">Save URL</button><button id="check-worker" class="button secondary">Check setup</button></div>
+        </section>
 
-      <section class="settings-section">
-        <h2 class="section-title">Reset extension</h2>
-        <p class="setting-help">This deletes the local key and saved site/label mappings．You will need the recovery key from your password manager to restore it．</p>
-        <button id="reset" class="button danger">Reset</button>
-      </section>
-      <div id="mapping-settings"></div>
+        <section class="settings-section" id="routing-setup">
+          <h2 class="section-title">3．Connect Email Routing</h2>
+          <p class="setting-help">Route the mail domain catch-all to this Worker in Cloudflare Email Routing．mailias cannot verify that rule through <code>/health</code>，so confirm it here after saving the rule．</p>
+          <div class="row-actions">
+            <a class="button secondary button-link" href="https://dash.cloudflare.com/" target="_blank" rel="noreferrer">Open Email Routing</a>
+            <button class="button primary" id="confirm-routing" type="button">I configured Email Routing</button>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h2 class="section-title">4．Finish setup</h2>
+          <p class="setting-help">Run the check after the Worker bindings and Email Routing confirmation are ready．When every status passes，this setup view is hidden until reset．</p>
+          <button id="finish-setup" class="button primary">Check and finish setup</button>
+        </section>
+      </div>
+
+      <div id="management-view" class="hidden">
+        <section class="settings-section">
+          <h2 class="section-title">Alias management</h2>
+          <p class="setting-help">mailias is configured．Manage saved site/label mappings below．</p>
+        </section>
+        <div id="mapping-settings"></div>
+        <section class="settings-section">
+          <h2 class="section-title">Reset extension</h2>
+          <p class="setting-help">This deletes the local key，Worker URL，setup state，and saved site/label mappings．You will need the recovery key from your password manager to restore it．</p>
+          <button id="reset" class="button danger">Reset</button>
+        </section>
+      </div>
+
       <p id="message" class="message" role="status"></p>
     </main>
     <script type="module" src="./options.ts"></script>
