@@ -10,7 +10,7 @@ type RuntimeBindings = {
   forwardTo?: string;
 };
 
-const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="28" fill="#0b74ff"/><path d="M30 42h68a8 8 0 0 1 8 8v38a8 8 0 0 1-8 8H30a8 8 0 0 1-8-8V50a8 8 0 0 1 8-8Z" fill="none" stroke="#fff" stroke-width="9" stroke-linejoin="round"/><path d="m27 49 37 28 37-28" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="96" cy="91" r="13" fill="#0b74ff" stroke="#fff" stroke-width="7"/></svg>`;
+const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="mailias"><rect width="128" height="128" rx="28" fill="#F6821F"/><path d="M28 30h72a8 8 0 0 1 8 8v34a8 8 0 0 1-8 8H28a8 8 0 0 1-8-8V38a8 8 0 0 1 8-8Z" fill="none" stroke="#fff" stroke-width="8" stroke-linejoin="round"/><path d="m25 38 39 29 39-29" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M36 98h50" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/><path d="m79 87 13 11-13 11" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 function json(body: object, status = 200): Response {
   return Response.json(body, {
@@ -24,12 +24,12 @@ function json(body: object, status = 200): Response {
 }
 
 function workerPage(): Response {
-  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>mailias Worker</title><link rel="icon" type="image/svg+xml" href="/favicon.svg"></head><body><main><h1>mailias Worker</h1><p>This Worker is running. Use the mailias browser extension to finish setup and manage aliases.</p></main></body></html>`;
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>mailias Worker</title><link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:light dark}body{margin:0;min-height:100vh;display:grid;place-items:center;background:Canvas;color:CanvasText}main{width:min(520px,calc(100% - 40px));padding:32px;border:1px solid color-mix(in srgb,CanvasText 12%,transparent);border-radius:16px;background:color-mix(in srgb,#f6821f 5%,Canvas)}.brand{display:flex;align-items:center;gap:14px}.brand img{width:48px;height:48px}h1{margin:0;color:#f6821f;font-size:26px}p{line-height:1.6;color:color-mix(in srgb,CanvasText 70%,transparent)}</style></head><body><main><div class="brand"><img src="/favicon.svg" alt=""><h1>mailias Worker</h1></div><p>This Worker is running. Use the mailias browser extension to finish setup and manage aliases.</p></main></body></html>`;
   return new Response(html, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "no-store",
-      "Content-Security-Policy": "default-src 'none'; img-src 'self'; frame-ancestors 'none'",
+      "Content-Security-Policy": "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; frame-ancestors 'none'",
     },
   });
 }
