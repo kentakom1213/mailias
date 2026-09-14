@@ -22,6 +22,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm package:extensions
-      - run: gh release create "$GITHUB_REF_NAME" dist/packages/*.zip --generate-notes --verify-tag
+      - name: Create GitHub release
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            dist/packages/mailias-chrome-extension.zip \
+            dist/packages/mailias-firefox-extension.zip \
+            --generate-notes \
+            --verify-tag
         env:
           GH_TOKEN: ${{ github.token }}
