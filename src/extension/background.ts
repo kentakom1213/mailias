@@ -15,7 +15,7 @@ type Settings = {
 type RequestMessage =
   | { type: "getStatus" }
   | { type: "generateAlias"; label: string }
-  | { type: "importSecret"; domain: string; secret: string; replace?: boolean }
+  | { type: "importSecret"; domain: string; secret: string }
   | { type: "setWorkerOrigin"; workerOrigin: string }
   | { type: "checkHealth" }
   | { type: "reset" };
@@ -85,9 +85,10 @@ async function settings(): Promise<Settings> {
 async function status(): Promise<object> {
   const current = await settings();
   const key = await getKey();
-  if (!key || !current.domain || !current.keyId) return { configured: false };
+  const setupLocked = Boolean(key || current.domain || current.keyId);
+  if (!key || !current.domain || !current.keyId) return { configured: false, setupLocked };
   const actualKeyId = await computeKeyId(key, current.domain);
-  return { ...current, configured: actualKeyId === current.keyId };
+  return { ...current, configured: actualKeyId === current.keyId, setupLocked };
 }
 
 async function handle(message: RequestMessage): Promise<object> {
@@ -106,8 +107,8 @@ async function handle(message: RequestMessage): Promise<object> {
       const keyId = await computeKeyId(key, domain);
       const current = await settings();
       const oldKey = await getKey();
-      if (oldKey && current.keyId && current.keyId !== keyId && !message.replace) {
-        throw new Error(`Replacing keyId ${current.keyId} requires explicit confirmation.`);
+      if (oldKey || current.domain || current.keyId) {
+        throw new Error("Setup is already complete．Reset the extension before setting it up again．");
       }
       await putKey(key);
       const verified = await getKey();
@@ -157,12 +158,17 @@ async function handle(message: RequestMessage): Promise<object> {
   }
 }
 
+// Serialize requests so concurrent setup pages cannot both overwrite the active key.
+let requests: Promise<unknown> = Promise.resolve();
+
 chrome.runtime.onMessage.addListener((message: RequestMessage, sender, sendResponse) => {
   if (sender.id !== chrome.runtime.id) {
     sendResponse({ ok: false, error: "Untrusted sender." });
     return false;
   }
-  void handle(message).then(
+  const response = requests.then(() => handle(message));
+  requests = response.catch(() => undefined);
+  void response.then(
     (value) => sendResponse({ ok: true, value }),
     (error: unknown) => sendResponse({ ok: false, error: error instanceof Error ? error.message : "Unknown error." }),
   );

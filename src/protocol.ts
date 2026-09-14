@@ -1,11 +1,10 @@
 export const VERSION = "v1";
-export const MAX_LABEL_LENGTH = 52;
+export const MAX_LABEL_LENGTH = 48;
 export const TAG_LENGTH = 8;
 export const SECRET_BYTES = 32;
 
-const BASE32_ALPHABET = "abcdefghijklmnopqrstuvwxyz234567";
-const LABEL_PATTERN = /^[a-z0-9-]+$/;
-const DOMAIN_LABEL_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+const BASE32_ALPHABET = "023456789abcdefghjkmnpqrstuvwxyz";
+const LABEL_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const encoder = new TextEncoder();
 
 export type ParsedAlias = {
@@ -16,26 +15,50 @@ export type ParsedAlias = {
 };
 
 export function normalizeLabel(input: string): string {
-  const label = input.trim().toLowerCase();
+  const label = input.trim().replace(/[A-Z]/g, (character) => character.toLowerCase());
   if (label.length < 1 || label.length > MAX_LABEL_LENGTH) {
     throw new Error(`Label must be between 1 and ${MAX_LABEL_LENGTH} characters.`);
   }
   if (!LABEL_PATTERN.test(label)) {
-    throw new Error("Label may contain only ASCII letters, digits, and hyphens.");
+    throw new Error("Label may contain ASCII letters, digits, and single hyphens between segments only.");
   }
   return label;
 }
 
 export function normalizeDomain(input: string): string {
-  let domain = input.trim().toLowerCase();
-  if (domain.endsWith(".")) domain = domain.slice(0, -1);
-  if (domain.length < 1 || domain.length > 253) {
-    throw new Error("Domain must be between 1 and 253 ASCII characters.");
+  const raw = input.trim();
+  if (raw.length === 0) {
+    throw new Error("Mail domain is required.");
   }
-  if (!domain.includes(".") || !domain.split(".").every((part) => DOMAIN_LABEL_PATTERN.test(part))) {
-    throw new Error("Enter an ASCII domain name, using Punycode for international domains.");
+  if (/[\s/@:]/.test(raw)) {
+    throw new Error("Enter a domain only, without protocol, path, port, or @.");
   }
-  return domain;
+  if (raw.endsWith(".")) {
+    throw new Error("Trailing dots are not accepted in the mail domain.");
+  }
+
+  let hostname: string;
+  try {
+    hostname = new URL(`https://${raw}`).hostname.toLowerCase();
+  } catch {
+    throw new Error("Invalid mail domain.");
+  }
+
+  if (hostname.length === 0 || hostname.length > 253 || hostname !== raw.toLowerCase()) {
+    throw new Error("Invalid mail domain.");
+  }
+
+  for (const part of hostname.split(".")) {
+    if (
+      part.length === 0 ||
+      part.length > 63 ||
+      !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(part)
+    ) {
+      throw new Error("Invalid mail domain.");
+    }
+  }
+
+  return hostname;
 }
 
 export function decodeSecret(value: string): Uint8Array<ArrayBuffer> {
@@ -137,7 +160,7 @@ export function parseAlias(address: string): ParsedAlias | null {
   const separator = address.lastIndexOf("@");
   if (separator < 1 || separator === address.length - 1) return null;
   const localPart = address.slice(0, separator).toLowerCase();
-  const match = /^(.*)-v1-([a-z2-7]{8})$/.exec(localPart);
+  const match = /^(.*)-v1-([023456789abcdefghjkmnpqrstuvwxyz]{8})$/.exec(localPart);
   if (!match?.[1] || !match[2]) return null;
   try {
     return {

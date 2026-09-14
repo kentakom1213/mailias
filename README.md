@@ -63,9 +63,9 @@ GitHub Actions validates every pull request and `main` push. A manual workflow d
 ## Protocol
 
 - Secret: 32 random bytes, encoded as unpadded Base64URL.
-- Label: 1–52 characters from `a-z`, `0-9`, and `-`; ASCII uppercase is lowercased.
+- Label: 1–48 characters from `a-z`, `0-9`, and single hyphens between segments; ASCII uppercase is lowercased.
 - HMAC input: UTF-8 `mailias/v1\0<domain>\0<label>`.
-- Tag: first 40 bits of HMAC-SHA-256, encoded as lowercase RFC 4648 Base32 without padding.
+- Tag: first 40 bits of HMAC-SHA-256, encoded as the original 32-character alphabet `023456789abcdefghjkmnpqrstuvwxyz` without padding.
 - keyId: first 64 bits of `HMAC-SHA-256(secret, "mailias/key-id/v1\0" + domain)`, encoded as lowercase hexadecimal.
 
 The 40-bit tag is lightweight alias validation, not a high-strength authentication token.

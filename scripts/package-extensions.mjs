@@ -9,7 +9,7 @@ const common = {
   name: "mailias",
   version: "1.0.0",
   description: "Generate deterministic, verifiable email aliases locally.",
-  permissions: ["storage"],
+  permissions: ["storage", "activeTab"],
   optional_host_permissions: ["https://*/*"],
   action: { default_popup: "src/extension/popup.html", default_title: "mailias" },
   options_ui: { page: "src/extension/options.html", open_in_tab: true },

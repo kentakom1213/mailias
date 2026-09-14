@@ -39,3 +39,38 @@ describe("Worker health endpoint", () => {
     expect(response.status).toBe(404);
   });
 });
+
+describe("Worker email verification", () => {
+  async function forwarded(address: string, secret = env.MAILIAS_SECRET): Promise<string[]> {
+    const recipients: string[] = [];
+    const message = {
+      to: address,
+      forward: async (recipient: string) => { recipients.push(recipient); },
+    } as unknown as ForwardableEmailMessage;
+    await worker.email(message, { ...env, MAILIAS_SECRET: secret });
+    return recipients;
+  }
+
+  it("forwards the independently checked current v1 vector", async () => {
+    expect(await forwarded("github-v1-6e4du4hu@m.pwll.dev")).toEqual([env.FORWARD_TO]);
+  });
+
+  it("rejects the incompatible RFC 4648 variant", async () => {
+    expect(await forwarded("github-v1-fndm2dq2@m.pwll.dev")).toEqual([]);
+  });
+
+  it("does not forward altered labels, domains, tags, or versions", async () => {
+    for (const address of [
+      "gitlab-v1-6e4du4hu@m.pwll.dev",
+      "github-v1-6e4du4hu@other.example",
+      "github-v1-6e4du4hv@m.pwll.dev",
+      "github-v2-6e4du4hu@m.pwll.dev",
+    ]) {
+      expect(await forwarded(address)).toEqual([]);
+    }
+  });
+
+  it("does not forward an alias when the secret differs", async () => {
+    expect(await forwarded("github-v1-6e4du4hu@m.pwll.dev", encodeSecret(new Uint8Array(32)))).toEqual([]);
+  });
+});

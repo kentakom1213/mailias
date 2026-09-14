@@ -1,8 +1,10 @@
-import { computeKeyId, generateSecret, importSecret, normalizeDomain } from "../protocol";
+import { render as renderMappings } from "./mapping-settings";
+import { generateSecret, normalizeDomain } from "../protocol";
 import { requestOrigin, sendMessage } from "./platform";
 
 type Status = {
   configured: boolean;
+  setupLocked: boolean;
   domain?: string;
   keyId?: string;
   workerOrigin?: string;
@@ -21,28 +23,36 @@ function showMessage(text: string, error = false): void {
   message.classList.toggle("error", error);
 }
 
+function clearSetup(): void {
+  setupSecret = "";
+  setupDomain = "";
+  for (const input of document.querySelectorAll<HTMLInputElement>("#new-setup input, #restore-setup input")) {
+    input.value = "";
+  }
+  backupStep.classList.add("hidden");
+  verifyStep.classList.add("hidden");
+}
+
 async function refresh(): Promise<void> {
   const status = await sendMessage<Status>({ type: "getStatus" });
+  await renderMappings();
   document.querySelector("#status")!.textContent = status.configured
     ? `${status.domain} · keyId ${status.keyId}`
     : "Not configured";
+  for (const id of ["new-setup", "restore-setup"]) {
+    const section = document.querySelector<HTMLFieldSetElement>(`#${id}`)!;
+    section.disabled = status.setupLocked;
+    section.classList.toggle("hidden", status.setupLocked);
+  }
+  document.querySelector("#setup-locked")!.classList.toggle("hidden", !status.setupLocked);
+  if (status.setupLocked) clearSetup();
   const workerInput = document.querySelector<HTMLInputElement>("#worker-origin")!;
   if (status.workerOrigin && !workerInput.value) workerInput.value = status.workerOrigin;
 }
 
 async function saveSecret(domainInput: string, secret: string): Promise<{ domain: string; keyId: string }> {
   const domain = normalizeDomain(domainInput);
-  const candidateKey = await importSecret(secret);
-  const candidateKeyId = await computeKeyId(candidateKey, domain);
-  const current = await sendMessage<Status>({ type: "getStatus" });
-  let replace = false;
-  if (current.configured && current.keyId !== candidateKeyId) {
-    replace = confirm(
-      `Replace keyId ${current.keyId} with ${candidateKeyId}? Existing aliases will stop working if the Worker secret is also changed．`,
-    );
-    if (!replace) throw new Error("Key replacement cancelled．");
-  }
-  return sendMessage({ type: "importSecret", domain, secret, replace });
+  return sendMessage({ type: "importSecret", domain, secret });
 }
 
 document.querySelector("#generate")!.addEventListener("click", () => {
@@ -126,11 +136,17 @@ document.querySelector("#check-worker")!.addEventListener("click", () => {
 });
 
 document.querySelector("#reset")!.addEventListener("click", () => {
-  if (!confirm("Delete the local key? Make sure the recovery key is available in your password manager．")) return;
+  if (!confirm("Delete the local key and saved site/label mappings? Make sure the recovery key is available in your password manager．")) return;
   void sendMessage({ type: "reset" }).then(async () => {
+    clearSetup();
     showMessage("Extension reset．");
     await refresh();
   });
+});
+
+chrome.storage.onChanged.addListener((_changes, area) => {
+  if (area === "local") void refresh().catch((error: unknown) =>
+    showMessage(error instanceof Error ? error.message : "Could not load settings．", true));
 });
 
 void refresh().catch((error: unknown) => showMessage(error instanceof Error ? error.message : "Could not load settings．", true));

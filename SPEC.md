@@ -4,11 +4,11 @@
 
 An alias has the form `<label>-v1-<tag>@<domain>`.
 
-- `label` is 1–52 characters from `[a-z0-9-]`. ASCII uppercase input is lowercased after surrounding whitespace is removed. Other substitutions are not performed.
-- `domain` is lowercased ASCII with no trailing dot. Internationalized names must be supplied in Punycode form.
+- `label` is 1–48 characters matching `[a-z0-9]+(?:-[a-z0-9]+)*` (no leading, trailing, or consecutive hyphens). ASCII uppercase input is lowercased after surrounding whitespace is removed. Other substitutions are not performed.
+- `domain` is lowercased ASCII; trailing dots are rejected. Internationalized names must be supplied in Punycode form.
 - The secret is exactly 32 random bytes and is represented to users as unpadded Base64URL.
 - The HMAC message is the UTF-8 encoding of `mailias/v1\0<domain>\0<label>`.
-- The tag is the first 40 bits of HMAC-SHA-256, encoded as eight lowercase RFC 4648 Base32 characters without padding.
+- The tag is the first 40 bits of HMAC-SHA-256, encoded as eight characters using the original alphabet `023456789abcdefghjkmnpqrstuvwxyz` (indices 0–31, most significant bits first, no padding).
 - The `keyId` is the first 64 bits of `HMAC-SHA-256(secret, "mailias/key-id/v1\0" + domain)`, encoded as 16 lowercase hexadecimal characters.
 
 The tag provides lightweight alias validation. It is not a high-strength authentication token.

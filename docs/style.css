@@ -115,7 +115,7 @@ h1 {
 }
 
 .summary {
-  max-width: 43em;
+  max-width: 45em;
   margin: 18px 0 22px;
   text-wrap: pretty;
 }
@@ -242,7 +242,7 @@ p { margin: 0 0 18px; }
 }
 
 .setup-intro {
-  max-width: 43em;
+  max-width: 45em;
   text-wrap: pretty;
 }
 

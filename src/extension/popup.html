@@ -1,27 +1,5 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>mailias</title>
-    <link rel="stylesheet" href="./style.css" />
-  </head>
-  <body class="popup">
-    <main>
-      <header><h1>mailias</h1><button id="settings" class="text-button">Settings</button></header>
-      <section id="unconfigured" class="card hidden">
-        <p>Set up your mail domain and recovery key before generating aliases.</p>
-        <button id="setup">Open setup</button>
-      </section>
-      <form id="generator" class="hidden">
-        <label for="label">Label</label>
-        <input id="label" name="label" maxlength="52" autocomplete="off" spellcheck="false" autofocus />
-        <p id="domain" class="muted"></p>
-        <output id="alias" class="alias"></output>
-        <button id="copy" type="button" disabled>Copy</button>
-        <p id="message" class="message" role="status"></p>
-      </form>
-    </main>
-    <script type="module" src="./popup.ts"></script>
-  </body>
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>mailias</title><link rel="stylesheet" href="./popup.css" /></head>
+<body><div id="app"></div><script type="module" src="./popup.ts"></script></body>
 </html>

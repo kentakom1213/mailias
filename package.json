@@ -23,10 +23,10 @@
   "cloudflare": {
     "bindings": {
       "MAILIAS_SECRET": {
-        "description": "Paste the 43-character recovery key generated and verified by the mailias browser extension．Save the recovery copy in your password manager first．"
+        "description": "Paste the 43-character recovery key generated and verified by the mailias browser extension\uff0eSave the recovery copy in your password manager first\uff0e"
       },
       "FORWARD_TO": {
-        "description": "Enter the destination email address already verified in Cloudflare Email Routing．"
+        "description": "Enter the destination email address already verified in Cloudflare Email Routing\uff0e"
       }
     }
   },
@@ -37,5 +37,8 @@
     "vite": "latest",
     "vitest": "latest",
     "wrangler": "latest"
+  },
+  "dependencies": {
+    "tldts": "7.4.12"
   }
 }

@@ -17,7 +17,7 @@ const secret = encodeSecret(secretBytes);
 
 function expectedTag(domain: string, label: string): string {
   const bytes = createHmac("sha256", secretBytes).update(`mailias/v1\0${domain}\0${label}`).digest().subarray(0, 5);
-  const alphabet = "abcdefghijklmnopqrstuvwxyz234567";
+  const alphabet = "023456789abcdefghjkmnpqrstuvwxyz";
   let result = "";
   for (let offset = 0; offset < 40; offset += 5) {
     let value = 0;
@@ -53,14 +53,15 @@ describe("mailias v1 protocol", () => {
     expect(await computeKeyId(key, "other.example.com")).not.toBe(expected);
   });
 
-  it("accepts 52-character labels and rejects longer labels", () => {
-    expect(normalizeLabel("a".repeat(52))).toHaveLength(52);
-    expect(() => normalizeLabel("a".repeat(53))).toThrow(/52/);
+  it("accepts 48-character labels and rejects longer labels", () => {
+    expect(normalizeLabel("a".repeat(48))).toHaveLength(48);
+    expect(() => normalizeLabel("a".repeat(49))).toThrow(/48/);
   });
 
   it("normalizes ASCII domains and rejects ambiguous input", () => {
-    expect(normalizeDomain("Mail.Example.COM.")).toBe("mail.example.com");
-    expect(() => normalizeDomain("localhost")).toThrow();
+    expect(normalizeDomain("Mail.Example.COM")).toBe("mail.example.com");
+    expect(normalizeDomain("localhost")).toBe("localhost");
+    expect(() => normalizeDomain("m.example.com.")).toThrow();
     expect(() => normalizeDomain("m.例.jp")).toThrow();
   });
 
@@ -75,7 +76,25 @@ describe("mailias v1 protocol", () => {
   it("rejects malformed aliases and unknown versions", async () => {
     const key = await importSecret(secret);
     expect(parseAlias("github-v2-aaaaaaaa@m.example.com")).toBeNull();
-    expect(parseAlias("github-v1-00000000@m.example.com")).toBeNull();
+    expect(parseAlias("github-v1-11111111@m.example.com")).toBeNull();
     expect(await verifyAlias(key, "not-an-alias@m.example.com")).toBe(false);
   });
+});
+
+it("matches the original Firefox fixed vector", async () => {
+  const key = await importSecret(secret);
+  const address = "github-v1-6e4du4hu@m.pwll.dev";
+  expect(await generateAlias(key, "m.pwll.dev", "github")).toBe(address);
+  expect(await verifyAlias(key, address)).toBe(true);
+  expect(await verifyAlias(key, "github-v1-fndm2dq2@m.pwll.dev")).toBe(false);
+});
+
+it("preserves the original label and domain validation rules", () => {
+  for (const label of ["-github", "github-", "github--work", "github_work", "a".repeat(49)]) {
+    expect(() => normalizeLabel(label)).toThrow();
+  }
+  expect(normalizeLabel(" GitHub-Work ")).toBe("github-work");
+  for (const domain of ["m.example.com.", "https://example.com", "a..com", "a".repeat(64)+".com", "user@example.com"]) {
+    expect(() => normalizeDomain(domain)).toThrow();
+  }
 });

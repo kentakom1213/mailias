@@ -43,3 +43,6 @@ button:disabled { cursor: default; opacity: .5; }
   .inline { align-items: stretch; flex-direction: column; }
   .inline button { width: 100%; }
 }
+
+fieldset.card { margin: 0; min-width: 0; }
+fieldset:disabled input { opacity: .65; }
