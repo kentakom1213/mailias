@@ -6,6 +6,8 @@ mailias v1 generates deterministic email aliases locally and verifies them in a 
 
 Setup guide: [English](SETUP.md) · [日本語](SETUP-ja.md)
 
+Website: [kentakom1213.github.io/mailias](https://kentakom1213.github.io/mailias/)
+
 ```text
 <label>-v1-<tag>@<domain>
 ```
