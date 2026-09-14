@@ -51,6 +51,7 @@ a { color: inherit; }
 .site-confirm { flex-basis: 100%; }
 .inline-panel, .site-confirm { margin-top: 14px; padding: 14px; border-radius: 9px; background: color-mix(in srgb, CanvasText 5%, Canvas); }
 code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+#mapping-settings + .settings-section { margin-top: 24px; }
 
 .language-view { min-height: 520px; display: grid; place-items: center; }
 .language-card { width: min(100%, 560px); padding: 30px; border: 1px solid color-mix(in srgb, CanvasText 12%, transparent); border-radius: 14px; background: color-mix(in srgb, var(--mailias-orange) 5%, Canvas); }
