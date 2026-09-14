@@ -1,21 +1,80 @@
 import { append, button, el, message } from "./shared/ui";
-import { exportMappings, importMappings, loadState, removeSite } from "./storage/state";
+import { isRegistrableDomain } from "./shared/domain";
+import { addAlias, exportMappings, importMappings, loadState, removeSite, sortAliases } from "./storage/state";
 import type { ExtensionState } from "./storage/types";
+
 let siteDelete: { domain: string; stage: 1 | 2 } | null = null;
 let statusText = "";
 let statusKind: "notice" | "error" = "notice";
-function setStatus(text: string, kind: "notice" | "error" = "notice"): void {
-  statusText = text; statusKind = kind;
+
+function t(english: string, japanese: string): string {
+  return document.documentElement.lang === "ja" ? japanese : english;
 }
+
+function setStatus(text: string, kind: "notice" | "error" = "notice"): void {
+  statusText = text;
+  statusKind = kind;
+}
+
 function section(title: string): HTMLElement {
   const node = el("section", "settings-section");
-  append(node, el("h2", "section-title", title)); return node;
+  append(node, el("h2", "section-title", title));
+  return node;
 }
+
+function addMappingSection(): HTMLElement {
+  const node = section(t("Add site / label", "サイト / ラベルを追加"));
+  append(node, el("p", "setting-help", t(
+    "Register a label from Settings without opening the popup. Labels are saved only in the extension; the generated email address remains deterministic.",
+    "ポップアップを開かずに，設定画面からサイトとラベルの対応を登録できます．保存されるのは拡張機能内の対応だけで，メールアドレス自体は決定的に生成されます．",
+  )));
+
+  const siteLabel = el("label", "field-label", t("Site domain", "サイトのドメイン"));
+  const siteInput = el("input", "text-input") as HTMLInputElement;
+  siteInput.placeholder = "github.com";
+  siteInput.autocomplete = "off";
+  siteInput.spellcheck = false;
+  siteLabel.htmlFor = "mapping-site-domain";
+  siteInput.id = "mapping-site-domain";
+
+  const labelLabel = el("label", "field-label", t("Label", "ラベル"));
+  const labelInput = el("input", "text-input") as HTMLInputElement;
+  labelInput.placeholder = "github";
+  labelInput.autocomplete = "off";
+  labelInput.spellcheck = false;
+  labelLabel.htmlFor = "mapping-label";
+  labelInput.id = "mapping-label";
+
+  const add = button(t("Add label", "ラベルを追加"), "button primary");
+  add.addEventListener("click", async () => {
+    const domain = siteInput.value.trim().toLowerCase();
+    const label = labelInput.value.trim();
+    try {
+      if (!isRegistrableDomain(domain)) {
+        throw new Error(t("Enter a registrable site domain such as github.com.", "github.com のような登録可能ドメインを入力してください．"));
+      }
+      const record = await addAlias(domain, label);
+      siteInput.value = "";
+      labelInput.value = "";
+      setStatus(t(
+        `Added label "${record.label}" for ${domain}.`,
+        `${domain} にラベル「${record.label}」を追加しました．`,
+      ));
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : t("Could not add the label.", "ラベルを追加できませんでした．"), "error");
+    }
+    await render();
+  });
+
+  append(node, siteLabel, siteInput, labelLabel, labelInput, add);
+  return node;
+}
+
 function sitesSection(state: ExtensionState): HTMLElement {
-  const node = section("Sites");
+  const node = section(t("Registered labels", "登録済みラベル"));
   const domains = Object.keys(state.sites).sort();
   if (domains.length === 0) {
-    append(node, el("p", "setting-help", "No site mappings yet."));
+    append(node, el("p", "setting-help", t("No site mappings yet.", "まだサイト / ラベル対応はありません．")));
     return node;
   }
 
@@ -23,11 +82,12 @@ function sitesSection(state: ExtensionState): HTMLElement {
   for (const domain of domains) {
     const site = state.sites[domain];
     if (!site) continue;
+    const aliases = sortAliases(site.aliases);
     const item = el("div", "site-item");
     const main = el("div");
     append(main, el("div", "site-name", domain));
-    append(main, el("div", "setting-help", `${site.aliases.length} alias${site.aliases.length === 1 ? "" : "es"}`));
-    const remove = button("Remove site", "button danger-outline");
+    append(main, el("div", "setting-help", `${t("Labels", "ラベル")}: ${aliases.map((alias) => alias.label).join(", ")}`));
+    const remove = button(t("Remove site", "サイトを削除"), "button danger-outline");
     remove.addEventListener("click", () => {
       siteDelete = { domain, stage: 1 };
       void render();
@@ -36,18 +96,27 @@ function sitesSection(state: ExtensionState): HTMLElement {
 
     if (siteDelete?.domain === domain) {
       const confirm = el("div", "site-confirm");
-      append(confirm, 
+      append(confirm,
         el(
           "div",
           "warning-box",
           siteDelete.stage === 1
-            ? `This removes ${site.aliases.length} saved label${site.aliases.length === 1 ? "" : "s"} for ${domain}. The email aliases themselves remain valid.`
-            : `Remove ${domain} and all of its saved labels from this extension?`,
+            ? t(
+                `This removes ${aliases.length} saved label${aliases.length === 1 ? "" : "s"} for ${domain}. The email aliases themselves remain valid.`,
+                `${domain} の保存済みラベル ${aliases.length} 件を拡張機能から削除します．メールエイリアス自体は引き続き有効です．`,
+              )
+            : t(
+                `Remove ${domain} and all of its saved labels from this extension?`,
+                `${domain} と保存済みラベルをすべて拡張機能から削除しますか？`,
+              ),
         ),
       );
       const actions = el("div", "actions");
-      const cancel = button("Cancel", "button secondary");
-      const next = button(siteDelete.stage === 1 ? "Continue" : "Remove site", siteDelete.stage === 1 ? "button danger-outline" : "button danger");
+      const cancel = button(t("Cancel", "キャンセル"), "button secondary");
+      const next = button(
+        siteDelete.stage === 1 ? t("Continue", "続行") : t("Remove site", "サイトを削除"),
+        siteDelete.stage === 1 ? "button danger-outline" : "button danger",
+      );
       cancel.addEventListener("click", () => {
         siteDelete = null;
         void render();
@@ -60,7 +129,7 @@ function sitesSection(state: ExtensionState): HTMLElement {
         }
         await removeSite(domain);
         siteDelete = null;
-        setStatus(`${domain} removed from the extension.`);
+        setStatus(t(`${domain} removed from the extension.`, `${domain} を拡張機能から削除しました．`));
         await render();
       });
       append(actions, cancel, next);
@@ -74,17 +143,16 @@ function sitesSection(state: ExtensionState): HTMLElement {
 }
 
 function dataSection(state: ExtensionState): HTMLElement {
-  const node = section("Data");
-  const help = el(
+  const node = section(t("Data", "データ"));
+  append(node, el(
     "p",
     "setting-help",
-    "Export and import site/label mappings. The master key is never included.",
-  );
-  append(node, help);
+    t("Export and import site/label mappings. The master key is never included.", "サイト / ラベル対応をエクスポート・インポートできます．マスターキーは含まれません．"),
+  ));
   const actions = el("div", "data-actions");
-  const exportButton = button("Export mappings", "button secondary");
-  const importButton = button("Import mappings", "button secondary");
-  const fileInput = el("input");
+  const exportButton = button(t("Export mappings", "対応をエクスポート"), "button secondary");
+  const importButton = button(t("Import mappings", "対応をインポート"), "button secondary");
+  const fileInput = el("input") as HTMLInputElement;
   fileInput.type = "file";
   fileInput.accept = "application/json,.json";
   fileInput.hidden = true;
@@ -102,7 +170,7 @@ function dataSection(state: ExtensionState): HTMLElement {
       anchor.click();
       setTimeout(() => URL.revokeObjectURL(url), 0);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Could not export mappings.", "error");
+      setStatus(error instanceof Error ? error.message : t("Could not export mappings.", "対応をエクスポートできませんでした．"), "error");
       void render();
     }
   });
@@ -114,9 +182,12 @@ function dataSection(state: ExtensionState): HTMLElement {
     try {
       const parsed: unknown = JSON.parse(await file.text());
       const result = await importMappings(parsed);
-      setStatus(`Import complete: ${result.added} added, ${result.skipped} skipped.`);
+      setStatus(t(
+        `Import complete: ${result.added} added, ${result.skipped} skipped.`,
+        `インポート完了：${result.added} 件追加，${result.skipped} 件スキップ．`,
+      ));
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Could not import mappings.", "error");
+      setStatus(error instanceof Error ? error.message : t("Could not import mappings.", "対応をインポートできませんでした．"), "error");
     }
     await render();
   });
@@ -127,6 +198,9 @@ export async function render(): Promise<void> {
   const root = document.querySelector<HTMLElement>("#mapping-settings")!;
   const state = await loadState();
   root.replaceChildren();
-  if (statusText) { message(root, statusText, statusKind); statusText = ""; }
-  append(root, sitesSection(state), dataSection(state));
+  if (statusText) {
+    message(root, statusText, statusKind);
+    statusText = "";
+  }
+  append(root, addMappingSection(), sitesSection(state), dataSection(state));
 }
