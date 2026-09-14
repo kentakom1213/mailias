@@ -21,7 +21,11 @@ The browser extension is the required client. It stores the HMAC key as a non-ex
 
 ## Setup
 
-Follow the [English setup guide](SETUP.md) or [日本語セットアップガイド](SETUP-ja.md)．The guide covers recovery-key backup，Deploy to Cloudflare，Worker secrets，Email Routing，and the final key check．
+Open the extension Settings page and follow its setup checklist. The extension is the setup home: it guides recovery-key backup, Worker deployment, runtime binding checks, Email Routing confirmation, and the final key match.
+
+The first Worker deployment can succeed before `MAILIAS_SECRET` and `FORWARD_TO` are configured. After deployment, add those runtime bindings in Cloudflare and run the extension's final setup check.
+
+Once every setup status passes, the setup UI is hidden and the Settings page shows alias management only. The setup UI returns only after reset.
 
 The password-manager copy is the only recovery source. Cloudflare does not reveal a Worker Secret after it is set, and the extension key is deliberately non-exportable.
 
@@ -76,4 +80,4 @@ mailias does not keep a revocation database. To stop one leaked alias, add an ex
 
 ## Privacy and permissions
 
-The extension does not store generated aliases, labels, browsing history, or usage history. It does not inspect the active tab and has no content scripts. Its only required extension permission is `storage`; access to the configured Worker origin is requested only when health checks are enabled.
+The extension does not inspect the active tab and has no content scripts. Its only required extension permission is `storage`; access to the configured Worker origin is requested only when health checks are enabled.
