@@ -10,6 +10,15 @@ type Settings = {
   domain: string;
   keyId: string;
   workerOrigin: string;
+  emailRoutingConfirmed: boolean;
+  setupComplete: boolean;
+};
+
+type WorkerHealth = {
+  status?: unknown;
+  version?: unknown;
+  configured?: { secret?: unknown; forwardTo?: unknown };
+  keyId?: unknown;
 };
 
 type RequestMessage =
@@ -17,6 +26,7 @@ type RequestMessage =
   | { type: "generateAlias"; label: string }
   | { type: "importSecret"; domain: string; secret: string }
   | { type: "setWorkerOrigin"; workerOrigin: string }
+  | { type: "setEmailRoutingConfirmed"; confirmed: boolean }
   | { type: "checkHealth" }
   | { type: "reset" };
 
@@ -79,14 +89,23 @@ async function deleteDatabase(): Promise<void> {
 }
 
 async function settings(): Promise<Settings> {
-  return getStorage<Settings>({ schemaVersion: 1, domain: "", keyId: "", workerOrigin: "" });
+  return getStorage<Settings>({
+    schemaVersion: 1,
+    domain: "",
+    keyId: "",
+    workerOrigin: "",
+    emailRoutingConfirmed: false,
+    setupComplete: false,
+  });
 }
 
 async function status(): Promise<object> {
   const current = await settings();
   const key = await getKey();
   const setupLocked = Boolean(key || current.domain || current.keyId);
-  if (!key || !current.domain || !current.keyId) return { configured: false, setupLocked };
+  if (!key || !current.domain || !current.keyId) {
+    return { ...current, configured: false, setupLocked };
+  }
   const actualKeyId = await computeKeyId(key, current.domain);
   return { ...current, configured: actualKeyId === current.keyId, setupLocked };
 }
@@ -123,6 +142,8 @@ async function handle(message: RequestMessage): Promise<object> {
           domain,
           keyId,
           workerOrigin: current.workerOrigin,
+          emailRoutingConfirmed: current.emailRoutingConfirmed,
+          setupComplete: false,
         });
       } catch (error) {
         if (oldKey) await putKey(oldKey);
@@ -137,8 +158,13 @@ async function handle(message: RequestMessage): Promise<object> {
         throw new Error("Enter an HTTPS Worker origin without a path.");
       }
       const current = await settings();
-      await setStorage({ ...current, workerOrigin: url.origin });
+      await setStorage({ ...current, workerOrigin: url.origin, setupComplete: false });
       return { workerOrigin: url.origin };
+    }
+    case "setEmailRoutingConfirmed": {
+      const current = await settings();
+      await setStorage({ ...current, emailRoutingConfirmed: message.confirmed, setupComplete: false });
+      return { emailRoutingConfirmed: message.confirmed };
     }
     case "checkHealth": {
       const current = await settings();
@@ -149,7 +175,14 @@ async function handle(message: RequestMessage): Promise<object> {
       if (!response.ok) throw new Error(`Worker health check failed with HTTP ${response.status}.`);
       const health: unknown = await response.json();
       if (!health || typeof health !== "object") throw new Error("Worker returned an invalid response.");
-      return { health, matches: (health as { keyId?: unknown }).keyId === current.keyId };
+      const parsed = health as WorkerHealth;
+      const matches = parsed.keyId === current.keyId;
+      const bindingsReady = parsed.configured?.secret === true && parsed.configured?.forwardTo === true;
+      const complete = Boolean(bindingsReady && matches && current.emailRoutingConfirmed);
+      if (complete && !current.setupComplete) {
+        await setStorage({ ...current, setupComplete: true });
+      }
+      return { health, matches, complete };
     }
     case "reset":
       await deleteDatabase();
@@ -158,7 +191,6 @@ async function handle(message: RequestMessage): Promise<object> {
   }
 }
 
-// Serialize requests so concurrent setup pages cannot both overwrite the active key.
 let requests: Promise<unknown> = Promise.resolve();
 
 chrome.runtime.onMessage.addListener((message: RequestMessage, sender, sendResponse) => {
