@@ -11,13 +11,17 @@ function json(body: object, status = 200): Response {
   });
 }
 
-async function health(request: Request, env: Env): Promise<Response> {
-  const url = new URL(request.url);
-  const domain = url.searchParams.get("domain");
-  const configured = {
+function configuredBindings(env: Env): { secret: boolean; forwardTo: boolean } {
+  return {
     secret: typeof env.MAILIAS_SECRET === "string" && env.MAILIAS_SECRET.length > 0,
     forwardTo: typeof env.FORWARD_TO === "string" && env.FORWARD_TO.length > 0,
   };
+}
+
+async function health(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const domain = url.searchParams.get("domain");
+  const configured = configuredBindings(env);
 
   if (!domain || !configured.secret) {
     return json({ status: "ok", version: "v1", configured, keyId: null });
@@ -46,13 +50,19 @@ export default {
   },
 
   async email(message: ForwardableEmailMessage, env: Env): Promise<void> {
+    const configured = configuredBindings(env);
+    if (!configured.secret || !configured.forwardTo) {
+      console.error(JSON.stringify({ event: "mailias_email_unconfigured" }));
+      return;
+    }
+
     try {
       const key = await importSecret(env.MAILIAS_SECRET);
       if (!(await verifyAlias(key, message.to))) return;
       await message.forward(env.FORWARD_TO);
-    } catch (error) {
+    } catch {
       console.error(JSON.stringify({ event: "mailias_email_error" }));
-      throw error;
+      throw new Error("mailias email handling failed");
     }
   },
 } satisfies ExportedHandler<Env>;
