@@ -104,6 +104,9 @@
                 <button class="button secondary" data-i18n="step4.copy" id="copy-secret" type="button">Copy</button>
               </div>
               <p class="setting-help" data-i18n="step4.help">Extension pages are not always fillable by password managers．Copy the key and save it manually if needed．The Worker page opened in a normal tab also provides a password-manager-friendly helper and never submits the key．</p>
+              <div class="row-actions">
+                <a class="button secondary button-link" id="open-worker-helper-backup" data-i18n="step4.openHelper" target="_blank" rel="noreferrer">Open Worker setup helper</a>
+              </div>
               <div class="step-actions"><button class="button primary" data-i18n="step4.saved" id="saved" type="button">I saved it in my password manager</button></div>
             </section>
 
@@ -120,7 +123,10 @@
                   <li data-i18n="step5.instruction4">Add <code>FORWARD_TO</code> as a normal <strong>Variable</strong> with the verified destination email address．It is not a secret．</li>
                   <li data-i18n="step5.instruction5">Select <strong>Deploy</strong> in Cloudflare．</li>
                 </ol>
-                <a class="button primary button-link" data-i18n="step5.open" href="https://dash.cloudflare.com/?to=/:account/workers-and-pages" target="_blank" rel="noreferrer">Open Cloudflare Workers</a>
+                <div class="row-actions">
+                  <a class="button primary button-link" data-i18n="step5.open" href="https://dash.cloudflare.com/?to=/:account/workers-and-pages" target="_blank" rel="noreferrer">Open Cloudflare Workers</a>
+                  <a class="button secondary button-link" id="open-worker-helper-config" data-i18n="step5.openHelper" target="_blank" rel="noreferrer">Open Worker setup helper</a>
+                </div>
               </div>
 
               <div class="worker-check-list" aria-label="Worker configuration status">
@@ -181,5 +187,6 @@
       </div>
     </main>
     <script type="module" src="./options.ts"></script>
+    <script type="module" src="./worker-helper-links.ts"></script>
   </body>
 </html>
