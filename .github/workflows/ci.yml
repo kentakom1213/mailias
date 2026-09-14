@@ -28,12 +28,12 @@ jobs:
       - name: Upload Chrome extension
         uses: actions/upload-artifact@v4
         with:
-          name: mailias-extension-chrome.zip
-          path: dist/packages/mailias-extension-chrome.zip
+          name: mailias-extension-chrome
+          path: dist/chrome
           if-no-files-found: error
       - name: Upload Firefox extension
         uses: actions/upload-artifact@v4
         with:
-          name: mailias-extension-firefox.zip
-          path: dist/packages/mailias-extension-firefox.zip
+          name: mailias-extension-firefox
+          path: dist/firefox
           if-no-files-found: error
