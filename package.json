@@ -1,0 +1,41 @@
+{
+  "name": "mailias",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@10.25.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm build:extension && pnpm build:worker",
+    "build:extension": "vite build && node scripts/package-extensions.mjs",
+    "build:worker": "wrangler deploy --dry-run --outdir dist/worker",
+    "package:extensions": "pnpm build:extension && node scripts/package-release.mjs",
+    "check": "pnpm types:worker && tsc --noEmit && vitest run",
+    "dev:extension": "vite build --watch",
+    "dev:worker": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "types:worker": "wrangler types worker-configuration.d.ts"
+  },
+  "cloudflare": {
+    "bindings": {
+      "MAILIAS_SECRET": {
+        "description": "Paste the 43-character recovery key generated and verified by the mailias browser extension．Save the recovery copy in your password manager first．"
+      },
+      "FORWARD_TO": {
+        "description": "Enter the destination email address already verified in Cloudflare Email Routing．"
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/chrome": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "vitest": "latest",
+    "wrangler": "latest"
+  }
+}

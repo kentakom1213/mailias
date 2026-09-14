@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mailias settings</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body class="options">
+    <main>
+      <header><div><p class="eyebrow">mailias v1</p><h1>Settings</h1></div></header>
+      <section class="card" id="current"><h2>Current configuration</h2><div id="status">Not configured</div></section>
+
+      <section class="card" id="new-setup">
+        <h2>New setup</h2>
+        <p>Create a recovery key locally．The key never leaves this extension unless you copy it．</p>
+        <label for="new-domain">Mail domain</label>
+        <input id="new-domain" placeholder="m.example.com" autocomplete="off" spellcheck="false" />
+        <button id="generate">Generate recovery key</button>
+        <div id="backup-step" class="hidden stack">
+          <div class="warning"><strong>This key cannot be read back from the extension．</strong> Save it in your password manager before continuing．It is the only recovery copy．</div>
+          <label for="generated-secret">Recovery key</label>
+          <div class="inline"><input id="generated-secret" type="password" readonly /><button id="copy-secret" type="button">Copy</button></div>
+          <button id="saved" type="button">I saved it in my password manager</button>
+        </div>
+        <div id="verify-step" class="hidden stack">
+          <p>The displayed key has been cleared．Paste it back from your password manager to verify the backup．</p>
+          <label for="verify-secret">Recovery key from password manager</label>
+          <input id="verify-secret" type="password" autocomplete="off" />
+          <button id="verify" type="button">Verify backup and finish setup</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Restore existing setup</h2>
+        <p>Use the recovery key stored in your password manager．</p>
+        <label for="restore-domain">Mail domain</label>
+        <input id="restore-domain" placeholder="m.example.com" autocomplete="off" spellcheck="false" />
+        <label for="restore-secret">Recovery key</label>
+        <input id="restore-secret" type="password" autocomplete="off" />
+        <button id="restore">Restore</button>
+      </section>
+
+      <section class="card">
+        <h2>Cloudflare Worker</h2>
+        <label for="worker-origin">Worker URL</label>
+        <input id="worker-origin" type="url" placeholder="https://mailias.example.workers.dev" />
+        <div class="inline"><button id="save-worker">Save URL</button><button id="check-worker" class="secondary">Check setup</button></div>
+        <pre id="health" class="result"></pre>
+      </section>
+
+      <section class="card danger-zone">
+        <h2>Reset extension</h2>
+        <p>This deletes the local non-exportable key．You will need the recovery key from your password manager to restore it．</p>
+        <button id="reset" class="danger">Reset</button>
+      </section>
+      <p id="message" class="message" role="status"></p>
+    </main>
+    <script type="module" src="./options.ts"></script>
+  </body>
+</html>
