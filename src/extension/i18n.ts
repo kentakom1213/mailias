@@ -63,11 +63,12 @@ const japanese: Record<string, string> = {
 
   "step6.kicker": "ステップ 6 / 7",
   "step6.title": "Email Routing を接続",
-  "step6.description": "メールドメインの Email Routing を設定します．サブドメインを使う場合は先に有効化し，その後 catch-all を mailias Worker に送るよう設定します．",
+  "step6.description": "メールドメインの Email Routing を設定します．転送先アドレスを先に確認し，サブドメインを使う場合は有効化してから，catch-all を mailias Worker に送るよう設定します．",
   "step6.instruction1": "<strong id=\"routing-domain\">メールドメイン</strong> を含む apex domain の Email Routing を開きます．",
-  "step6.instruction2": "<code>m.example.com</code> のようなサブドメインを使う場合は，<strong>Settings → Subdomains</strong> で先に追加し，利用可能になるまで待ちます．",
-  "step6.instruction3": "メールドメインの <strong>Routing Rules</strong> を開き，<strong>Catch-all</strong> ルールを有効にします．",
-  "step6.instruction4": "Catch-all のアクションを <strong>Send to a Worker</strong> にし，mailias Worker を選択して保存します．",
+  "step6.instruction2": "<strong>Destination Addresses</strong> を開き，<code>MY_ADDRESS</code> に設定したメールアドレスを追加します．Cloudflare から届く確認メールを開き，<strong>Verify email address</strong> を選択して認証を完了します．",
+  "step6.instruction3": "<code>m.example.com</code> のようなサブドメインを使う場合は，<strong>Settings → Subdomains</strong> で先に追加し，利用可能になるまで待ちます．",
+  "step6.instruction4": "メールドメインの <strong>Routing Rules</strong> を開き，<strong>Catch-all</strong> ルールを有効にします．",
+  "step6.instruction5": "Catch-all のアクションを <strong>Send to a Worker</strong> にし，mailias Worker を選択して保存します．",
   "step6.open": "Email Routing を開く",
   "step6.confirm": "Email Routing を設定しました",
 
