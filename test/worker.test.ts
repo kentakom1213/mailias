@@ -21,6 +21,20 @@ describe("Worker health endpoint", () => {
     });
   });
 
+  it("allows the Worker to boot before runtime bindings are configured", async () => {
+    const response = await worker.fetch(
+      new Request("https://mailias.example/health?domain=m.example.com"),
+      {} as Env,
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      status: "ok",
+      version: "v1",
+      configured: { secret: false, forwardTo: false },
+      keyId: null,
+    });
+  });
+
   it("returns the domain-bound keyId", async () => {
     const response = await worker.fetch(
       new Request("https://mailias.example/health?domain=m.example.com"),
@@ -50,6 +64,16 @@ describe("Worker email verification", () => {
     await worker.email(message, { ...env, MAILIAS_SECRET: secret });
     return recipients;
   }
+
+  it("silently avoids forwarding while runtime bindings are incomplete", async () => {
+    const recipients: string[] = [];
+    const message = {
+      to: "github-v1-6e4du4hu@m.pwll.dev",
+      forward: async (recipient: string) => { recipients.push(recipient); },
+    } as unknown as ForwardableEmailMessage;
+    await worker.email(message, {} as Env);
+    expect(recipients).toEqual([]);
+  });
 
   it("forwards the independently checked current v1 vector", async () => {
     expect(await forwarded("github-v1-6e4du4hu@m.pwll.dev")).toEqual([env.FORWARD_TO]);
