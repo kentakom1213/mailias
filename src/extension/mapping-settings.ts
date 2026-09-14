@@ -1,3 +1,4 @@
+import { sendMessage } from "./platform";
 import { append, button, el, message } from "./shared/ui";
 import { isRegistrableDomain } from "./shared/domain";
 import { addAlias, exportMappings, importMappings, loadState, removeSite, sortAliases } from "./storage/state";
@@ -20,6 +21,11 @@ function section(title: string): HTMLElement {
   const node = el("section", "settings-section");
   append(node, el("h2", "section-title", title));
   return node;
+}
+
+async function addressFor(label: string): Promise<string> {
+  const result = await sendMessage<{ alias: string }>({ type: "generateAlias", label });
+  return result.alias;
 }
 
 function addMappingSection(): HTMLElement {
@@ -54,11 +60,12 @@ function addMappingSection(): HTMLElement {
         throw new Error(t("Enter a registrable site domain such as github.com.", "github.com のような登録可能ドメインを入力してください．"));
       }
       const record = await addAlias(domain, label);
+      const address = await addressFor(record.label);
       siteInput.value = "";
       labelInput.value = "";
       setStatus(t(
-        `Added label "${record.label}" for ${domain}.`,
-        `${domain} にラベル「${record.label}」を追加しました．`,
+        `Added ${address} for ${domain}.`,
+        `${domain} に ${address} を追加しました．`,
       ));
     } catch (error) {
       setStatus(error instanceof Error ? error.message : t("Could not add the label.", "ラベルを追加できませんでした．"), "error");
@@ -66,11 +73,13 @@ function addMappingSection(): HTMLElement {
     await render();
   });
 
-  append(node, siteLabel, siteInput, labelLabel, labelInput, add);
+  const addActions = el("div", "step-actions");
+  append(addActions, add);
+  append(node, siteLabel, siteInput, labelLabel, labelInput, addActions);
   return node;
 }
 
-function sitesSection(state: ExtensionState): HTMLElement {
+async function sitesSection(state: ExtensionState): Promise<HTMLElement> {
   const node = section(t("Registered labels", "登録済みラベル"));
   const domains = Object.keys(state.sites).sort();
   if (domains.length === 0) {
@@ -83,16 +92,45 @@ function sitesSection(state: ExtensionState): HTMLElement {
     const site = state.sites[domain];
     if (!site) continue;
     const aliases = sortAliases(site.aliases);
+    const addresses = await Promise.all(aliases.map((alias) => addressFor(alias.label)));
     const item = el("div", "site-item");
     const main = el("div");
     append(main, el("div", "site-name", domain));
-    append(main, el("div", "setting-help", `${t("Labels", "ラベル")}: ${aliases.map((alias) => alias.label).join(", ")}`));
+    append(main, el("div", "setting-help", t(
+      `${aliases.length} registered label${aliases.length === 1 ? "" : "s"}`,
+      `登録済みラベル ${aliases.length} 件`,
+    )));
     const remove = button(t("Remove site", "サイトを削除"), "button danger-outline");
     remove.addEventListener("click", () => {
       siteDelete = { domain, stage: 1 };
       void render();
     });
     append(item, main, remove);
+
+    const aliasList = el("div", "worker-check-list");
+    aliases.forEach((alias, index) => {
+      const address = addresses[index];
+      if (!address) return;
+      const row = el("div", "worker-check-row");
+      const details = el("div");
+      append(details, el("div", "setting-value", alias.label));
+      append(details, el("div", "setting-help", address));
+      const copy = button(t("Copy address", "アドレスをコピー"), "button secondary");
+      copy.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(address);
+          copy.textContent = t("Copied", "コピーしました");
+          setTimeout(() => {
+            copy.textContent = t("Copy address", "アドレスをコピー");
+          }, 1200);
+        } catch {
+          copy.textContent = t("Copy failed", "コピー失敗");
+        }
+      });
+      append(row, details, copy);
+      append(aliasList, row);
+    });
+    append(item, aliasList);
 
     if (siteDelete?.domain === domain) {
       const confirm = el("div", "site-confirm");
@@ -202,5 +240,5 @@ export async function render(): Promise<void> {
     message(root, statusText, statusKind);
     statusText = "";
   }
-  append(root, addMappingSection(), sitesSection(state), dataSection(state));
+  append(root, addMappingSection(), await sitesSection(state), dataSection(state));
 }
