@@ -31,6 +31,7 @@ button { cursor: pointer; }
 .button.secondary { background: transparent; }
 .button.danger { background: #b42318; border-color: #b42318; color: white; }
 .button.danger-outline { border-color: #b42318; background: transparent; color: #b42318; }
+.button-link { display: inline-flex; align-items: center; text-decoration: none; }
 .inline-panel, .site-confirm { margin-top: 14px; padding: 14px; border-radius: 9px; background: color-mix(in srgb, CanvasText 5%, Canvas); }
 .field-label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 650; }
 .text-input { width: min(100%, 520px); padding: 9px 10px; border: 1px solid color-mix(in srgb, CanvasText 24%, transparent); border-radius: 7px; background: Field; color: FieldText; }
@@ -43,22 +44,22 @@ button { cursor: pointer; }
 .site-item { position: relative; padding: 12px 0; border-top: 1px solid color-mix(in srgb, CanvasText 9%, transparent); flex-wrap: wrap; }
 .site-item:first-child { border-top: 0; }
 .site-confirm { flex-basis: 100%; }
+.setup-status-list { display: grid; gap: 0; margin-top: 14px; }
+.setup-status-row { display: flex; justify-content: space-between; gap: 20px; padding: 9px 0; border-top: 1px solid color-mix(in srgb, CanvasText 9%, transparent); }
+.setup-status-row:first-child { border-top: 0; }
+.setup-status { font-weight: 650; text-align: right; }
+.setup-status.ready { color: #237a3b; }
+.setup-status.missing { color: #b42318; }
+.setup-status.pending { color: color-mix(in srgb, CanvasText 55%, transparent); }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
 @media (max-width: 600px) {
-  .page-width {
-    width: calc(100% - 24px);
-  }
-  .setting-row {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .row-actions {
-    width: 100%;
-  }
+  .page-width { width: calc(100% - 24px); }
+  .setting-row { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .row-actions { width: 100%; }
+  .setup-status-row { gap: 12px; }
 }
 
-/* Additional setup and Worker controls use the same reference styles. */
 .hidden { display: none !important; }
 fieldset.settings-section { border: 0; border-bottom: 1px solid color-mix(in srgb, CanvasText 12%, transparent); margin: 0; min-width: 0; }
 button:disabled { cursor: default; opacity: .5; }
@@ -69,4 +70,3 @@ fieldset:disabled input { opacity: .65; }
 .row-actions { margin-top: 12px; }
 .result { white-space: pre-wrap; overflow-wrap: anywhere; }
 .result:empty, .message:empty { display: none; }
-#setup-locked { font-size: 13px; }
