@@ -1,56 +1,99 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="mailiasは，自分のドメインでサービスごとのメールアドレスを作る，オープンソースのブラウザ拡張機能です．">
-<meta name="theme-color" content="#ffffff"><title>mailias — サービスごとに，違うアドレスを．</title>
-<link rel="stylesheet" href="./style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="mailiasは，自分のドメインから用途ごとのメールアドレスを作り，届いたメールを普段の受信箱へ転送するブラウザ拡張機能です．">
+  <meta name="theme-color" content="#ffffff">
+  <title>mailias — サービスごとに，違うアドレスを．</title>
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<a class="skip-link" href="#main">本文へ移動</a>
-<header>
-<a class="logo" href="#top">mailias <small>v1</small></a>
-<nav aria-label="メインナビゲーション"><a href="#about">概要</a><a href="#setup">使い方</a><a href="#notes">注意点</a><a href="https://github.com/kentakom1213/mailias">GitHub ↗</a></nav>
-</header>
-<main id="main">
-<section class="intro" id="top">
-<p class="meta">OPEN SOURCE / CHROME / FIREFOX / CLOUDFLARE</p>
-<h1>サービスごとに，<br>違うアドレスを．</h1>
-<p class="lead">mailiasは，自分のドメインから用途ごとのメールアドレスを作るブラウザ拡張機能です．アドレスはブラウザの中で作り，届いたメールは自分のCloudflareから，いつもの受信箱へ転送します．</p>
-<p class="alias"><span>例</span> shopping-v1-k3m7q2fz@mail.example.com</p>
-<div class="actions"><a class="primary" href="https://deploy.workers.cloudflare.com/?url=https://github.com/kentakom1213/mailias">Deploy to Cloudflare ↗</a><a href="https://github.com/kentakom1213/mailias/blob/main/SETUP-ja.md">セットアップ手順</a></div>
-</section>
-<section id="about">
-<h2><span>01</span> mailiasについて</h2>
-<div class="blocks">
-<article><h3>手元で作る</h3><p>用途を表す名前と復旧キーから，ブラウザの中でアドレスを作ります．発行したアドレスの一覧は送信しません．</p></article>
-<article><h3>キーを守る</h3><p>拡張機能には，読み出せない形に変換したキーを保存します．設定後に，元の復旧キーを表示することはできません．</p></article>
-<article><h3>受信箱へ届ける</h3><p>自分のCloudflare Workerが宛先を確かめ，正しいアドレスに届いたメールだけを転送します．</p></article>
-</div>
-</section>
-<section id="setup">
-<h2><span>02</span> 使い始める</h2>
-<p>メールに使うドメイン，転送先，パスワードマネージャーを用意します．セットアップの目安は約10分です．</p>
-<ol class="steps">
-<li><strong>拡張機能を入れる</strong><p>ChromeまたはFirefoxへmailiasをインストールします．</p></li>
-<li><strong>復旧キーを保管する</strong><p>拡張機能でキーを作り，パスワードマネージャーへ保存します．保存したキーを貼り戻し，間違いがないことも確認します．</p></li>
-<li><strong>Workerを作る</strong><p>上のデプロイボタンからリポジトリを複製し，<code>MAILIAS_SECRET</code>と<code>FORWARD_TO</code>をCloudflareのSecretに設定します．復旧キーや転送先がGitHubへ書き込まれることはありません．</p></li>
-<li><strong>メールをつなぐ</strong><p>Email Routingのcatch-allをWorkerへ向け，実際にメールを送って転送を確かめます．</p></li>
-</ol>
-<p><a href="https://github.com/kentakom1213/mailias/blob/main/SETUP-ja.md">日本語の詳しいセットアップ手順 ↗</a></p>
-</section>
-<section id="notes">
-<h2><span>03</span> 使う前に</h2>
-<div class="note"><h3>復旧キーについて</h3><p>パスワードマネージャーに保存した復旧キーが，唯一の復旧元です．このキーと拡張機能のデータを両方失うと，以前と同じアドレスを作れません．</p></div>
-<h3>特定のアドレスを止める</h3><p>mailias v1には，アドレスごとの停止機能がありません．Cloudflare Email Routingに，対象アドレスを破棄するルールを追加してください．復旧キーを変えると，それまでのアドレスがすべて使えなくなります．</p>
-<h3>拡張機能に残るもの</h3><p>ドメイン，WorkerのURL，読み出せない形にしたキーを保存します．発行したアドレス，用途の名前，閲覧履歴，利用履歴は保存しません．</p>
-<h3>タグの強度</h3><p>アドレスに含まれる40 bitのタグは，でたらめな宛先を見分けるためのものです．ログインや本人確認に使う認証トークンではありません．</p>
-</section>
-<section id="links">
-<h2><span>04</span> 資料</h2>
-<ul class="links"><li><a href="https://github.com/kentakom1213/mailias">ソースコード</a></li><li><a href="https://github.com/kentakom1213/mailias/blob/main/SPEC.md">プロトコル仕様</a></li><li><a href="https://github.com/kentakom1213/mailias/blob/main/docs/security-model.md">セキュリティ設計</a></li><li><a href="https://github.com/kentakom1213/mailias/blob/main/docs/architecture.md">構成</a></li></ul>
-</section>
-</main>
-<footer>© 2026 mailias contributors</footer>
+  <a class="skip-link" href="#main">本文へ移動</a>
+
+  <header class="site-header">
+    <a class="site-name" href="#top">mailias</a>
+    <nav aria-label="メインナビゲーション">
+      <a href="https://github.com/kentakom1213/mailias/blob/main/SETUP-ja.md">使い方</a>
+      <a href="https://github.com/kentakom1213/mailias">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="intro" id="top">
+      <p class="product-name">mailias</p>
+      <h1>サービスごとに，違うアドレスを．</h1>
+      <p class="summary">自分のドメインから用途ごとのメールアドレスを作り，届いたメールをいつもの受信箱へ転送するブラウザ拡張機能です．</p>
+
+      <p class="alias-example">
+        <span class="alias-label">github</span>
+        <span class="alias-arrow" aria-hidden="true">→</span>
+        <code>github-v1-vtabvg6w@m.example.com</code>
+      </p>
+
+      <div class="intro-links">
+        <a class="install-link" href="https://github.com/kentakom1213/mailias/releases">拡張機能を入れる</a>
+        <a class="text-link" href="https://github.com/kentakom1213/mailias/blob/main/SETUP-ja.md">使い方を見る <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+
+    <section>
+      <h2>mailiasは何をしている？</h2>
+      <ol class="flow">
+        <li>
+          <span class="number">01</span>
+          <div>
+            <h3>手元で作る</h3>
+            <p>ブラウザの中でエイリアスを生成します．</p>
+          </div>
+        </li>
+        <li>
+          <span class="number">02</span>
+          <div>
+            <h3>検証する</h3>
+            <p>Cloudflare Email Workerがアドレスを確認します．</p>
+          </div>
+        </li>
+        <li>
+          <span class="number">03</span>
+          <div>
+            <h3>転送する</h3>
+            <p>正しいメールを普段の受信箱へ届けます．</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>使い始める</h2>
+      <ol class="setup-steps">
+        <li><span class="number">01</span><span>拡張機能を入れる</span></li>
+        <li><span class="number">02</span><span>復旧キーを保管する</span></li>
+        <li><span class="number">03</span><span>Cloudflareを設定する</span></li>
+        <li><span class="number">04</span><span>エイリアスを作る</span></li>
+      </ol>
+      <p><a class="text-link" href="https://github.com/kentakom1213/mailias/blob/main/SETUP-ja.md">詳しいセットアップ手順 <span aria-hidden="true">→</span></a></p>
+    </section>
+
+    <section>
+      <h2>復旧キーについて</h2>
+      <p class="recovery-note">復旧キーを失うと，それまでのアドレスを再生成できません．パスワードマネージャーなどに保管してください．</p>
+    </section>
+
+    <section>
+      <h2>詳しく知る</h2>
+      <ul class="document-links">
+        <li><a href="https://github.com/kentakom1213/mailias/blob/main/SETUP-ja.md">使い方 <span aria-hidden="true">→</span></a></li>
+        <li><a href="https://github.com/kentakom1213/mailias/blob/main/docs/security-model.md">セキュリティ設計 <span aria-hidden="true">→</span></a></li>
+        <li><a href="https://github.com/kentakom1213/mailias/blob/main/SPEC.md">プロトコル仕様 <span aria-hidden="true">→</span></a></li>
+        <li><a href="https://github.com/kentakom1213/mailias">GitHub <span aria-hidden="true">→</span></a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <span>mailias</span>
+    <a href="https://github.com/kentakom1213/mailias">GitHub</a>
+  </footer>
 </body>
 </html>
