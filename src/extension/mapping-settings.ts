@@ -235,10 +235,18 @@ function dataSection(state: ExtensionState): HTMLElement {
 export async function render(): Promise<void> {
   const root = document.querySelector<HTMLElement>("#mapping-settings")!;
   const state = await loadState();
-  root.replaceChildren();
+  const addSection = addMappingSection();
+  const registeredSection = await sitesSection(state);
+  const data = dataSection(state);
+  const nodes: Node[] = [];
+
   if (statusText) {
-    message(root, statusText, statusKind);
+    const status = el("div");
+    message(status, statusText, statusKind);
+    nodes.push(...status.childNodes);
     statusText = "";
   }
-  append(root, addMappingSection(), await sitesSection(state), dataSection(state));
+
+  nodes.push(addSection, registeredSection, data);
+  root.replaceChildren(...nodes);
 }
