@@ -21,7 +21,7 @@ type Settings = {
 type WorkerHealth = {
   status?: unknown;
   version?: unknown;
-  configured?: { secret?: unknown; forwardTo?: unknown };
+  configured?: { secret?: unknown; myAddress?: unknown };
   keyId?: unknown;
 };
 
@@ -120,8 +120,6 @@ async function status(): Promise<object> {
   const key = await getKey();
   const setupLocked = Boolean(key || current.keyId);
 
-  // v1 builds before the setup wizard already required a paste-back backup check.
-  // Treat an existing persisted key as backed up when migrating that state.
   if (key && current.keyId && !current.recoveryBackedUp) {
     current = { ...current, recoveryBackedUp: true };
     await setStorage(current);
@@ -160,7 +158,7 @@ async function checkWorker(current: Settings): Promise<HealthResult> {
     throw new Error("The URL does not appear to be a mailias v1 Worker.");
   }
 
-  const bindingsReady = parsed.configured?.secret === true && parsed.configured?.forwardTo === true;
+  const bindingsReady = parsed.configured?.secret === true && parsed.configured?.myAddress === true;
   const matches = Boolean(current.keyId && parsed.keyId === current.keyId);
   const ready = parsed.status === "ok" && bindingsReady && matches;
   return { health: parsed, matches, bindingsReady, ready };

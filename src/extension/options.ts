@@ -18,7 +18,7 @@ type Status = {
 type WorkerHealth = {
   status?: string;
   version?: string;
-  configured?: { secret?: boolean; forwardTo?: boolean };
+  configured?: { secret?: boolean; myAddress?: boolean };
   keyId?: string | null;
 };
 
@@ -109,7 +109,7 @@ function renderWorkerChecks(): void {
 
   setSmallStatus("worker-check-reachable", true, localize("Reachable", "接続可能"));
   setSmallStatus("worker-check-secret", lastHealth.health.configured?.secret === true, localize("Configured", "設定済み"));
-  setSmallStatus("worker-check-forward", lastHealth.health.configured?.forwardTo === true, localize("Configured", "設定済み"));
+  setSmallStatus("worker-check-forward", lastHealth.health.configured?.myAddress === true, localize("Configured", "設定済み"));
   setSmallStatus("worker-check-match", lastHealth.matches, localize("Matches", "一致"), localize("Mismatch", "不一致"));
 }
 
@@ -193,8 +193,6 @@ async function refresh(_probeWorker = true): Promise<void> {
   const step = renderWizard(status);
   renderedStep = step;
 
-  // Entering the Worker configuration step performs the same health check once
-  // automatically. The button remains available for rechecking after edits in Cloudflare.
   if (step === 5 && previousStep !== 5 && lastHealth === null) {
     await checkWorkerConfiguration(false);
   }
@@ -217,10 +215,10 @@ function workerProblem(result: HealthResult): string {
       "MAILIAS_SECRET がまだ設定されていません．Worker の Settings → Variables and Secrets から追加してください．",
     );
   }
-  if (result.health.configured?.forwardTo !== true) {
+  if (result.health.configured?.myAddress !== true) {
     return localize(
-      "FORWARD_TO is not configured yet. Add the forwarding address in Worker Settings → Variables and Secrets.",
-      "FORWARD_TO がまだ設定されていません．Worker の Settings → Variables and Secrets から転送先を追加してください．",
+      "MY_ADDRESS is not configured yet. Add your own destination inbox address in Worker Settings → Variables and Secrets.",
+      "MY_ADDRESS がまだ設定されていません．Worker の Settings → Variables and Secrets から自分の転送先メールアドレスを追加してください．",
     );
   }
   if (!result.matches) {

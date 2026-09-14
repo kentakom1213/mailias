@@ -10,35 +10,37 @@ Chrome版またはFirefox版をインストールし，Settings画面を開き�
 
 ## 2．復旧キーを生成する
 
-Settings画面の案内に従い，メール用ドメインを入力して復旧キーを生成します．表示されたキーをパスワードマネージャーへ保存し，一度表示を消した後，パスワードマネージャーから貼り戻して一致確認します．
+Settings画面の案内に従い，メール用ドメインを入力して復旧キーを生成します．表示されたキーをコピーし，パスワードマネージャーへ手動で保存します．
 
 設定完了後，拡張から復旧キーを表示・コピーすることはできません．パスワードマネージャーに保存した値が唯一の復旧元です．
 
 ## 3．Workerをデプロイする
 
-Settings画面の**Deploy to Cloudflare**からWorkerをデプロイします．初回デプロイでは`MAILIAS_SECRET`と`FORWARD_TO`が未設定でもWorkerを起動できます．
+Settings画面の**Deploy to Cloudflare**からWorkerをデプロイします．初回デプロイでは`MAILIAS_SECRET`と`MY_ADDRESS`が未設定でもWorkerを起動できます．
 
 デプロイ後，Cloudflareで次のruntime bindingを設定します．
 
-- `MAILIAS_SECRET`: パスワードマネージャーに保存した復旧キー
-- `FORWARD_TO`: Cloudflare Email Routingで確認済みの転送先メールアドレス
+- `MAILIAS_SECRET`: パスワードマネージャーに保存した復旧キー．Secretとして設定します．
+- `MY_ADDRESS`: 実際にメールを受け取りたい自分の転送先メールアドレス．通常のVariableとして設定します．
 
-値はGitHubリポジトリやビルドログへ書き込まないでください．
+`MY_ADDRESS`はSecretではありません．`MAILIAS_SECRET`はGitHubリポジトリやビルドログへ書き込まないでください．
 
 ## 4．Worker URLを拡張へ登録する
 
-デプロイ済みWorkerのURL，例えば`https://mailias.example.workers.dev`をSettings画面へ入力して保存します．ブラウザが確認した場合は，そのWorker originへのアクセスを許可します．
+CloudflareでWorkerの`workers.dev`ドメインを有効にするかCustom Domainを追加し，公開HTTPS URLを用意します．デプロイ済みWorkerのURL，例えば`https://mailias.example.workers.dev`をSettings画面へ入力して保存します．ブラウザが確認した場合は，そのWorker originへのアクセスを許可します．
 
 拡張は`/health`を使い，次の状態を確認します．
 
 - Workerへ到達できること
 - `MAILIAS_SECRET`が設定済みであること
-- `FORWARD_TO`が設定済みであること
+- `MY_ADDRESS`が設定済みであること
 - Workerの`keyId`と拡張の`keyId`が一致すること
+
+Workerの通常Webページは意図的に最小限にしています．初期設定とエイリアス管理はブラウザ拡張から行います．
 
 ## 5．Email Routingを接続する
 
-Cloudflare Email Routingでメール用ドメインのcatch-allをmailias Workerへ送るよう設定します．この設定は`/health`から確認できないため，保存後にSettings画面の**I configured Email Routing**を選びます．
+Cloudflare Email Routingで，サブドメインを使う場合は先にそのサブドメインを追加し，その後メール用ドメインのcatch-allをmailias Workerへ送るよう設定します．この設定は`/health`から確認できないため，保存後にSettings画面の**I configured Email Routing**を選びます．
 
 ## 6．初期設定を完了する
 
@@ -48,7 +50,7 @@ Settings画面の**Check and finish setup**を実行します．すべてのス�
 
 ## テストメール
 
-初期設定後，popupから`setup-test`などのラベルでエイリアスを生成し，別のメールアカウントから送信して`FORWARD_TO`へ届くことを確認してください．
+初期設定後，popupから`setup-test`などのラベルでエイリアスを生成し，別のメールアカウントから送信して`MY_ADDRESS`に設定した自分のメールアドレスへ届くことを確認してください．
 
 ## 拡張を再インストール・移行する場合
 

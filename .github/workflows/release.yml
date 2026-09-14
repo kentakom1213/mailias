@@ -25,8 +25,8 @@ jobs:
       - name: Create GitHub release
         run: |
           gh release create "$GITHUB_REF_NAME" \
-            dist/packages/mailias-chrome-extension.zip \
-            dist/packages/mailias-firefox-extension.zip \
+            dist/packages/mailias-extension-chrome.zip \
+            dist/packages/mailias-extension-firefox.zip \
             --generate-notes \
             --verify-tag
         env:

@@ -6,7 +6,7 @@ import { encodeSecret } from "../src/protocol";
 const secretBytes = Uint8Array.from({ length: 32 }, (_, index) => index);
 const env = {
   MAILIAS_SECRET: encodeSecret(secretBytes),
-  FORWARD_TO: "owner@example.com",
+  MY_ADDRESS: "owner@example.com",
 } satisfies MailiasEnv;
 
 describe("Worker health endpoint", () => {
@@ -16,7 +16,7 @@ describe("Worker health endpoint", () => {
     expect(await response.json()).toEqual({
       status: "ok",
       version: "v1",
-      configured: { secret: true, forwardTo: true },
+      configured: { secret: true, myAddress: true },
       keyId: null,
     });
   });
@@ -30,7 +30,7 @@ describe("Worker health endpoint", () => {
     expect(await response.json()).toEqual({
       status: "ok",
       version: "v1",
-      configured: { secret: false, forwardTo: false },
+      configured: { secret: false, myAddress: false },
       keyId: null,
     });
   });
@@ -46,6 +46,14 @@ describe("Worker health endpoint", () => {
       .slice(0, 16);
     expect(await response.json()).toMatchObject({ keyId: expected });
     expect(response.headers.get("Cache-Control")).toBe("no-store");
+  });
+
+  it("accepts legacy FORWARD_TO while migrating existing deployments", async () => {
+    const response = await worker.fetch(new Request("https://mailias.example/health"), {
+      MAILIAS_SECRET: env.MAILIAS_SECRET,
+      FORWARD_TO: "owner@example.com",
+    } satisfies MailiasEnv);
+    expect(await response.json()).toMatchObject({ configured: { secret: true, myAddress: true } });
   });
 
   it("does not expose other HTTP routes", async () => {
@@ -76,7 +84,7 @@ describe("Worker email verification", () => {
   });
 
   it("forwards the independently checked current v1 vector", async () => {
-    expect(await forwarded("github-v1-6e4du4hu@m.pwll.dev")).toEqual([env.FORWARD_TO]);
+    expect(await forwarded("github-v1-6e4du4hu@m.pwll.dev")).toEqual([env.MY_ADDRESS]);
   });
 
   it("rejects the incompatible RFC 4648 variant", async () => {

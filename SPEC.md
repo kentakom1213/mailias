@@ -19,18 +19,16 @@ Chrome Desktop and Firefox Desktop are the v1 clients. They share all applicatio
 
 The options page is the setup home and later becomes the alias-management page. New setup requires this sequence:
 
-1. Generate the recovery key locally.
-2. Save it in a password manager.
-3. Clear the displayed value.
-4. Paste it back from the password manager.
-5. Verify exact equality.
-6. Import it as a non-extractable HMAC-SHA-256 `CryptoKey` with only the `sign` usage.
-7. Save and read back the key from extension-owned IndexedDB.
-8. Verify it by calculating the expected `keyId`.
-9. Deploy the Worker and save its HTTPS origin in the extension.
-10. Configure `MAILIAS_SECRET` and `FORWARD_TO` in Cloudflare.
-11. Configure the Email Routing catch-all rule and confirm that step in the extension.
-12. Check `/health` and require both Worker bindings plus a matching `keyId`.
+1. Connect a deployed Worker HTTPS origin.
+2. Select the mail domain.
+3. Generate the recovery key locally or restore an existing key.
+4. Save the recovery key in a password manager.
+5. Import it as a non-extractable HMAC-SHA-256 `CryptoKey` with only the `sign` usage.
+6. Save and read back the key from extension-owned IndexedDB.
+7. Verify it by calculating the expected `keyId`.
+8. Configure `MAILIAS_SECRET` and `MY_ADDRESS` in Cloudflare.
+9. Configure the Email Routing catch-all rule and confirm that step in the extension.
+10. Check `/health` and require both Worker bindings plus a matching `keyId`.
 
 When all setup statuses pass, the extension persists `setupComplete = true` and hides the setup UI. The options page then shows alias management only. The setup UI is shown again only after reset.
 
@@ -40,13 +38,15 @@ The extension stores `domain`, `keyId`, schema version, optional Worker origin, 
 
 ## Worker
 
-The Worker uses two runtime bindings: `MAILIAS_SECRET` and `FORWARD_TO`. It has no database, issued-alias list, or mutable application state.
+The Worker uses two user-facing runtime bindings: `MAILIAS_SECRET` and `MY_ADDRESS`. `MAILIAS_SECRET` is a Secret containing the recovery key. `MY_ADDRESS` is a normal Variable containing the user's own destination inbox address. It has no database, issued-alias list, or mutable application state.
 
 The Worker may be deployed before either runtime binding is configured. `GET /health?domain=<domain>` remains available in that state and reports which bindings are present. Incoming email is not forwarded until both bindings are configured.
 
-For incoming email, it parses and validates the recipient. A valid alias is forwarded to `FORWARD_TO`; malformed and invalid aliases are silently dropped. Configuration and forwarding failures are logged without the secret, recipient, forwarding destination, or message content.
+For incoming email, it parses and validates the recipient. A valid alias is forwarded to `MY_ADDRESS`; malformed and invalid aliases are silently dropped. Configuration and forwarding failures are logged without the secret, recipient, forwarding destination, or message content.
 
-`GET /health?domain=<domain>` reports the version, whether both bindings are configured, and the domain-bound `keyId`. It never returns either binding value. Other HTTP routes return 404.
+`GET /health?domain=<domain>` reports the version, whether both bindings are configured, and the domain-bound `keyId`. It never returns either binding value. The normal Worker web page is intentionally minimal and only indicates that the Worker is running. Other HTTP routes return 404.
+
+For compatibility with deployments created before the runtime-variable rename, the implementation may temporarily accept legacy `FORWARD_TO` as a fallback for `MY_ADDRESS`. New configurations use `MY_ADDRESS`.
 
 ## Recovery and revocation
 

@@ -9,7 +9,7 @@ await rm(packages, { recursive: true, force: true });
 await mkdir(packages, { recursive: true });
 
 for (const browser of ["chrome", "firefox"]) {
-  const output = resolve(packages, `mailias-${browser}-extension.zip`);
+  const output = resolve(packages, `mailias-extension-${browser}.zip`);
   const result = spawnSync("zip", ["-qr", output, "."], {
     cwd: resolve(root, `dist/${browser}`),
     stdio: "inherit",

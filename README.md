@@ -23,7 +23,7 @@ The browser extension is the required client. It stores the HMAC key as a non-ex
 
 Open the extension Settings page and follow its setup checklist. The extension is the setup home: it guides recovery-key backup, Worker deployment, runtime binding checks, Email Routing confirmation, and the final key match.
 
-The first Worker deployment can succeed before `MAILIAS_SECRET` and `FORWARD_TO` are configured. After deployment, add those runtime bindings in Cloudflare and run the extension's final setup check.
+The first Worker deployment can succeed before `MAILIAS_SECRET` and `MY_ADDRESS` are configured. `MAILIAS_SECRET` is the recovery key Secret. `MY_ADDRESS` is your own destination inbox address and is a normal Variable, not a Secret. After deployment, add both bindings in Cloudflare and run the extension's final setup check.
 
 Once every setup status passes, the setup UI is hidden and the Settings page shows alias management only. The setup UI returns only after reset.
 
@@ -45,7 +45,7 @@ Create uploadable extension archives with:
 pnpm package:extensions
 ```
 
-This produces `dist/packages/mailias-chrome.zip` and `dist/packages/mailias-firefox.zip`.
+This produces `dist/packages/mailias-extension-chrome.zip` and `dist/packages/mailias-extension-firefox.zip`.
 
 For local Worker development, copy `.dev.vars.example` to `.dev.vars` and fill in test values. Never commit `.dev.vars`.
 
@@ -62,7 +62,7 @@ docs/                    deployment，architecture，and security notes
 .github/workflows/       CI，manual Worker deploy，and tagged releases
 ```
 
-GitHub Actions validates every pull request and `main` push. A manual workflow deploys the Worker after Cloudflare credentials are configured, and `v*` tags create releases containing both extension ZIP files.
+GitHub Actions validates every pull request and `main` push. CI publishes separate `mailias-extension-chrome.zip` and `mailias-extension-firefox.zip` artifacts. A manual workflow deploys the Worker after Cloudflare credentials are configured, and `v*` tags create releases containing those two extension ZIP files as separate release assets.
 
 ## Protocol
 
