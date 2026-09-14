@@ -10,6 +10,8 @@ type RuntimeBindings = {
   forwardTo?: string;
 };
 
+const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="28" fill="#0b74ff"/><path d="M30 42h68a8 8 0 0 1 8 8v38a8 8 0 0 1-8 8H30a8 8 0 0 1-8-8V50a8 8 0 0 1 8-8Z" fill="none" stroke="#fff" stroke-width="9" stroke-linejoin="round"/><path d="m27 49 37 28 37-28" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="96" cy="91" r="13" fill="#0b74ff" stroke="#fff" stroke-width="7"/></svg>`;
+
 function json(body: object, status = 200): Response {
   return Response.json(body, {
     status,
@@ -17,6 +19,27 @@ function json(body: object, status = 200): Response {
       "Access-Control-Allow-Origin": "*",
       "Cache-Control": "no-store",
       "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
+    },
+  });
+}
+
+function workerPage(): Response {
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>mailias Worker</title><link rel="icon" type="image/svg+xml" href="/favicon.svg"></head><body><main><h1>mailias Worker</h1><p>This Worker is running. Use the mailias browser extension to finish setup and manage aliases.</p></main></body></html>`;
+  return new Response(html, {
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Content-Security-Policy": "default-src 'none'; img-src 'self'; frame-ancestors 'none'",
+    },
+  });
+}
+
+function favicon(): Response {
+  return new Response(ICON_SVG, {
+    headers: {
+      "Content-Type": "image/svg+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=86400",
+      "Content-Security-Policy": "default-src 'none'",
     },
   });
 }
@@ -66,6 +89,12 @@ async function health(request: Request, env: MailiasEnv): Promise<Response> {
 export default {
   async fetch(request: Request, env: MailiasEnv): Promise<Response> {
     const url = new URL(request.url);
+    if (request.method === "GET" && url.pathname === "/") {
+      return workerPage();
+    }
+    if (request.method === "GET" && url.pathname === "/favicon.svg") {
+      return favicon();
+    }
     if (request.method === "GET" && url.pathname === "/health") {
       return health(request, env);
     }

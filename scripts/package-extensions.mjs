@@ -11,7 +11,20 @@ const common = {
   description: "Generate deterministic, verifiable email aliases locally.",
   permissions: ["storage", "activeTab"],
   optional_host_permissions: ["https://*/*"],
-  action: { default_popup: "src/extension/popup.html", default_title: "mailias" },
+  icons: {
+    16: "icons/icon16.png",
+    32: "icons/icon32.png",
+    48: "icons/icon48.png",
+    128: "icons/icon128.png",
+  },
+  action: {
+    default_popup: "src/extension/popup.html",
+    default_title: "mailias",
+    default_icon: {
+      16: "icons/icon16.png",
+      32: "icons/icon32.png",
+    },
+  },
   options_ui: { page: "src/extension/options.html", open_in_tab: true },
   content_security_policy: { extension_pages: "default-src 'self'; connect-src https:; object-src 'none'; frame-ancestors 'none'" },
 };

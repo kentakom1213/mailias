@@ -4,98 +4,160 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>mailias settings</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="./options.css" />
   </head>
   <body class="options">
-    <header class="page-header"><div class="page-width"><div class="page-title">mailias</div><div class="page-subtitle">Extension settings</div></div></header>
+    <header class="page-header">
+      <div class="page-width">
+        <div class="page-title">mailias</div>
+        <div class="page-subtitle">Extension settings</div>
+      </div>
+    </header>
+
     <main class="page-width settings-page">
       <div id="setup-view">
-        <section class="settings-section">
-          <h2 class="section-title">Setup</h2>
-          <p class="setting-help">Complete each step below．When every status is ready，mailias switches to alias management until you reset the extension．</p>
-          <div class="setup-status-list" id="setup-status-list">
-            <div class="setup-status-row"><span>Recovery key</span><span id="status-key">Not ready</span></div>
-            <div class="setup-status-row"><span>Worker URL</span><span id="status-worker">Not ready</span></div>
-            <div class="setup-status-row"><span>Worker recovery key</span><span id="status-worker-secret">Not checked</span></div>
-            <div class="setup-status-row"><span>Forwarding address</span><span id="status-forward">Not checked</span></div>
-            <div class="setup-status-row"><span>Recovery key match</span><span id="status-match">Not checked</span></div>
-            <div class="setup-status-row"><span>Email Routing</span><span id="status-routing">Not confirmed</span></div>
-          </div>
-        </section>
+        <div class="setup-layout">
+          <aside class="setup-progress-panel" aria-label="Setup progress">
+            <div class="progress-title">Setup progress</div>
+            <ol class="progress-list">
+              <li class="progress-item" data-progress-step="1"><span class="progress-marker">1</span><span class="progress-label">Connect Worker</span><span class="progress-state" id="status-step-1">Pending</span></li>
+              <li class="progress-item" data-progress-step="2"><span class="progress-marker">2</span><span class="progress-label">Mail domain</span><span class="progress-state" id="status-step-2">Pending</span></li>
+              <li class="progress-item" data-progress-step="3"><span class="progress-marker">3</span><span class="progress-label">Recovery key</span><span class="progress-state" id="status-step-3">Pending</span></li>
+              <li class="progress-item" data-progress-step="4"><span class="progress-marker">4</span><span class="progress-label">Back up key</span><span class="progress-state" id="status-step-4">Pending</span></li>
+              <li class="progress-item" data-progress-step="5"><span class="progress-marker">5</span><span class="progress-label">Configure Worker</span><span class="progress-state" id="status-step-5">Pending</span></li>
+              <li class="progress-item" data-progress-step="6"><span class="progress-marker">6</span><span class="progress-label">Email Routing</span><span class="progress-state" id="status-step-6">Pending</span></li>
+              <li class="progress-item" data-progress-step="7"><span class="progress-marker">7</span><span class="progress-label">Final check</span><span class="progress-state" id="status-step-7">Pending</span></li>
+            </ol>
+          </aside>
 
-        <fieldset class="settings-section hidden" id="new-setup" disabled>
-          <h2 class="section-title">1．Create recovery key</h2>
-          <p class="setting-help">Create a recovery key locally．The key never leaves this extension unless you copy it．</p>
-          <label class="field-label" for="new-domain">Mail domain</label>
-          <input class="text-input" id="new-domain" placeholder="m.example.com" autocomplete="off" spellcheck="false" />
-          <button class="button primary" id="generate">Generate recovery key</button>
-          <div id="backup-step" class="hidden inline-panel stack">
-            <div class="warning-box"><strong>This key cannot be read back from the extension．</strong> Save it in your password manager before continuing．It is the only recovery copy．</div>
-            <label class="field-label" for="generated-secret">Recovery key</label>
-            <div class="row-actions"><input class="text-input" id="generated-secret" type="password" readonly /><button class="button primary" id="copy-secret" type="button">Copy</button></div>
-            <button class="button primary" id="saved" type="button">I saved it in my password manager</button>
-          </div>
-          <div id="verify-step" class="hidden inline-panel stack">
-            <p class="setting-help">The displayed key has been cleared．Paste it back from your password manager to verify the backup．</p>
-            <label class="field-label" for="verify-secret">Recovery key from password manager</label>
-            <input class="text-input" id="verify-secret" type="password" autocomplete="off" />
-            <button class="button primary" id="verify" type="button">Verify backup</button>
-          </div>
-        </fieldset>
+          <div class="setup-main">
+            <section class="wizard-step" id="step-1" data-step="1">
+              <div class="step-kicker">Step 1 of 7</div>
+              <h1 class="step-title">Connect your Worker</h1>
+              <p class="step-description">Deploy mailias to Cloudflare first，then paste the Worker URL here．mailias does not need a Cloudflare API token in the extension．</p>
+              <div class="row-actions">
+                <a class="button primary button-link" href="https://deploy.workers.cloudflare.com/?url=https://github.com/kentakom1213/mailias" target="_blank" rel="noreferrer">Deploy to Cloudflare</a>
+              </div>
+              <label class="field-label" for="worker-origin">Worker URL</label>
+              <input class="text-input" id="worker-origin" type="url" placeholder="https://mailias.example.workers.dev" autocomplete="off" spellcheck="false" />
+              <div class="step-actions"><button class="button primary" id="connect-worker" type="button">Connect Worker</button></div>
+            </section>
 
-        <fieldset class="settings-section hidden" id="restore-setup" disabled>
-          <h2 class="section-title">Restore existing setup</h2>
-          <p class="setting-help">Use the recovery key stored in your password manager．</p>
-          <label class="field-label" for="restore-domain">Mail domain</label>
-          <input class="text-input" id="restore-domain" placeholder="m.example.com" autocomplete="off" spellcheck="false" />
-          <label class="field-label" for="restore-secret">Recovery key</label>
-          <input class="text-input" id="restore-secret" type="password" autocomplete="off" />
-          <button class="button primary" id="restore">Restore</button>
-        </fieldset>
+            <section class="wizard-step hidden" id="step-2" data-step="2">
+              <div class="step-kicker">Step 2 of 7</div>
+              <h1 class="step-title">Choose your mail domain</h1>
+              <p class="step-description">Enter the domain that will receive mailias addresses，for example <code>m.example.com</code>．</p>
+              <label class="field-label" for="mail-domain">Mail domain</label>
+              <input class="text-input" id="mail-domain" placeholder="m.example.com" autocomplete="off" spellcheck="false" />
+              <div class="step-actions"><button class="button primary" id="save-domain" type="button">Save domain</button></div>
+            </section>
 
-        <section class="settings-section" id="worker-setup">
-          <h2 class="section-title">2．Deploy and connect the Worker</h2>
-          <p class="setting-help">Deploy first，then configure the runtime bindings in Cloudflare．The extension does not store a Cloudflare API token．</p>
-          <div class="row-actions">
-            <a class="button primary button-link" href="https://deploy.workers.cloudflare.com/?url=https://github.com/kentakom1213/mailias" target="_blank" rel="noreferrer">Deploy to Cloudflare</a>
-            <a class="button secondary button-link" href="https://dash.cloudflare.com/" target="_blank" rel="noreferrer">Open Cloudflare dashboard</a>
+            <section class="wizard-step hidden" id="step-3" data-step="3">
+              <div class="step-kicker">Step 3 of 7</div>
+              <h1 class="step-title">Set up your recovery key</h1>
+              <p class="step-description">Create a new key for a new installation，or restore an existing key from your password manager．</p>
+              <div class="choice-grid">
+                <div class="choice-card">
+                  <h2>New setup</h2>
+                  <p>Generate a random recovery key locally in this extension．</p>
+                  <button class="button primary" id="generate" type="button">Generate new key</button>
+                </div>
+                <div class="choice-card">
+                  <h2>Restore existing setup</h2>
+                  <p>Paste the recovery key already stored in your password manager．</p>
+                  <label class="field-label" for="existing-secret">Recovery key</label>
+                  <input class="text-input" id="existing-secret" type="password" autocomplete="off" />
+                  <button class="button secondary" id="restore" type="button">Use existing key</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="wizard-step hidden" id="step-4" data-step="4">
+              <div class="step-kicker">Step 4 of 7</div>
+              <h1 class="step-title">Back up the recovery key</h1>
+              <p class="step-description">Save this key in your password manager before continuing．After this step，mailias stores only a non-exportable key in the extension．</p>
+              <div class="warning-box"><strong>This is the only time mailias will show the raw recovery key．</strong></div>
+              <label class="field-label" for="generated-secret">Recovery key</label>
+              <div class="secret-row">
+                <input class="text-input" id="generated-secret" type="password" readonly />
+                <button class="button secondary" id="copy-secret" type="button">Copy</button>
+              </div>
+              <p class="setting-help">Create a password-manager entry now．You will retrieve this key again in the next step and paste it into Cloudflare．</p>
+              <div class="step-actions"><button class="button primary" id="saved" type="button">I saved it in my password manager</button></div>
+            </section>
+
+            <section class="wizard-step hidden" id="step-5" data-step="5">
+              <div class="step-kicker">Step 5 of 7</div>
+              <h1 class="step-title">Configure the Worker</h1>
+              <p class="step-description">Open your Worker in Cloudflare and add the two runtime bindings below．Retrieving the recovery key from your password manager here also confirms that your backup works．</p>
+
+              <div class="instruction-card">
+                <ol>
+                  <li>Open <strong>Workers &amp; Pages</strong> and select your mailias Worker．</li>
+                  <li>Open <strong>Settings → Variables and Secrets</strong>．</li>
+                  <li>Add <code>MAILIAS_SECRET</code> as a <strong>Secret</strong> using the recovery key from your password manager．</li>
+                  <li>Add <code>FORWARD_TO</code> with the verified destination email address．</li>
+                  <li>Select <strong>Deploy</strong> in Cloudflare．</li>
+                </ol>
+                <a class="button primary button-link" href="https://dash.cloudflare.com/?to=/:account/workers-and-pages" target="_blank" rel="noreferrer">Open Cloudflare Workers</a>
+              </div>
+
+              <div class="worker-check-list" aria-label="Worker configuration status">
+                <div class="worker-check-row"><span>Worker reachable</span><span id="worker-check-reachable" class="setup-status pending">Not checked</span></div>
+                <div class="worker-check-row"><span><code>MAILIAS_SECRET</code></span><span id="worker-check-secret" class="setup-status pending">Not checked</span></div>
+                <div class="worker-check-row"><span><code>FORWARD_TO</code></span><span id="worker-check-forward" class="setup-status pending">Not checked</span></div>
+                <div class="worker-check-row"><span>Recovery key matches</span><span id="worker-check-match" class="setup-status pending">Not checked</span></div>
+              </div>
+              <div class="step-actions"><button class="button primary" id="check-worker" type="button">Check Worker configuration</button></div>
+            </section>
+
+            <section class="wizard-step hidden" id="step-6" data-step="6">
+              <div class="step-kicker">Step 6 of 7</div>
+              <h1 class="step-title">Connect Email Routing</h1>
+              <p class="step-description">In Cloudflare Email Routing，send the catch-all address for your mail domain to the mailias Worker．This routing rule is not visible through <code>/health</code>，so confirm it here after saving the rule．</p>
+              <div class="instruction-card">
+                <ol>
+                  <li>Open Email Routing for <strong id="routing-domain">your mail domain</strong>．</li>
+                  <li>Set the catch-all action to <strong>Send to a Worker</strong>．</li>
+                  <li>Select your mailias Worker and save the rule．</li>
+                </ol>
+                <a class="button secondary button-link" href="https://dash.cloudflare.com/" target="_blank" rel="noreferrer">Open Email Routing</a>
+              </div>
+              <div class="step-actions"><button class="button primary" id="confirm-routing" type="button">I configured Email Routing</button></div>
+            </section>
+
+            <section class="wizard-step hidden" id="step-7" data-step="7">
+              <div class="step-kicker">Step 7 of 7</div>
+              <h1 class="step-title">Final check</h1>
+              <p class="step-description">mailias will recheck the Worker before completing setup．After this，the setup wizard stays hidden until you reset mailias．</p>
+              <div class="final-summary">
+                <div><span>Worker</span><strong id="final-worker">—</strong></div>
+                <div><span>Mail domain</span><strong id="final-domain">—</strong></div>
+                <div><span>Recovery key backup</span><strong>Ready</strong></div>
+                <div><span>Worker configuration</span><strong>Ready</strong></div>
+                <div><span>Email Routing</span><strong>Confirmed</strong></div>
+              </div>
+              <div class="step-actions"><button id="finish-setup" class="button primary" type="button">Start using mailias</button></div>
+            </section>
+
+            <p id="message" class="message" role="status"></p>
           </div>
-          <p class="setting-help">After deployment，set <code>MAILIAS_SECRET</code> from your password manager and <code>FORWARD_TO</code> to a verified Email Routing destination．</p>
-          <label class="field-label" for="worker-origin">Worker URL</label>
-          <input class="text-input" id="worker-origin" type="url" placeholder="https://mailias.example.workers.dev" />
-          <div class="row-actions"><button class="button primary" id="save-worker">Save URL</button><button id="check-worker" class="button secondary">Check setup</button></div>
-        </section>
-
-        <section class="settings-section" id="routing-setup">
-          <h2 class="section-title">3．Connect Email Routing</h2>
-          <p class="setting-help">Route the mail domain catch-all to this Worker in Cloudflare Email Routing．mailias cannot verify that rule through <code>/health</code>，so confirm it here after saving the rule．</p>
-          <div class="row-actions">
-            <a class="button secondary button-link" href="https://dash.cloudflare.com/" target="_blank" rel="noreferrer">Open Email Routing</a>
-            <button class="button primary" id="confirm-routing" type="button">I configured Email Routing</button>
-          </div>
-        </section>
-
-        <section class="settings-section">
-          <h2 class="section-title">4．Finish setup</h2>
-          <p class="setting-help">Run the check after the Worker bindings and Email Routing confirmation are ready．When every status passes，this setup view is hidden until reset．</p>
-          <button id="finish-setup" class="button primary">Check and finish setup</button>
-        </section>
+        </div>
       </div>
 
       <div id="management-view" class="hidden">
         <section class="settings-section">
-          <h2 class="section-title">Alias management</h2>
+          <h1 class="section-title management-title">Alias management</h1>
           <p class="setting-help">mailias is configured．Manage saved site/label mappings below．</p>
         </section>
         <div id="mapping-settings"></div>
         <section class="settings-section">
-          <h2 class="section-title">Reset extension</h2>
+          <h2 class="section-title">Reset mailias</h2>
           <p class="setting-help">This deletes the local key，Worker URL，setup state，and saved site/label mappings．You will need the recovery key from your password manager to restore it．</p>
-          <button id="reset" class="button danger">Reset</button>
+          <button id="reset" class="button danger" type="button">Reset</button>
         </section>
       </div>
-
-      <p id="message" class="message" role="status"></p>
     </main>
     <script type="module" src="./options.ts"></script>
   </body>

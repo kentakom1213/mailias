@@ -10,6 +10,7 @@ type Settings = {
   domain: string;
   keyId: string;
   workerOrigin: string;
+  recoveryBackedUp: boolean;
   emailRoutingConfirmed: boolean;
   setupComplete: boolean;
 };
@@ -21,13 +22,22 @@ type WorkerHealth = {
   keyId?: unknown;
 };
 
+type HealthResult = {
+  health: WorkerHealth;
+  matches: boolean;
+  bindingsReady: boolean;
+  ready: boolean;
+};
+
 type RequestMessage =
   | { type: "getStatus" }
   | { type: "generateAlias"; label: string }
-  | { type: "importSecret"; domain: string; secret: string }
+  | { type: "setDomain"; domain: string }
+  | { type: "importSecret"; domain: string; secret: string; recoveryBackedUp?: boolean }
   | { type: "setWorkerOrigin"; workerOrigin: string }
   | { type: "setEmailRoutingConfirmed"; confirmed: boolean }
   | { type: "checkHealth" }
+  | { type: "finishSetup" }
   | { type: "reset" };
 
 function openDatabase(): Promise<IDBDatabase> {
@@ -94,20 +104,61 @@ async function settings(): Promise<Settings> {
     domain: "",
     keyId: "",
     workerOrigin: "",
+    recoveryBackedUp: false,
     emailRoutingConfirmed: false,
     setupComplete: false,
   });
 }
 
 async function status(): Promise<object> {
-  const current = await settings();
+  let current = await settings();
   const key = await getKey();
-  const setupLocked = Boolean(key || current.domain || current.keyId);
+  const setupLocked = Boolean(key || current.keyId);
+
+  // v1 builds before the setup wizard already required a paste-back backup check.
+  // Treat an existing persisted key as backed up when migrating that state.
+  if (key && current.keyId && !current.recoveryBackedUp) {
+    current = { ...current, recoveryBackedUp: true };
+    await setStorage(current);
+  }
+
   if (!key || !current.domain || !current.keyId) {
     return { ...current, configured: false, setupLocked };
   }
   const actualKeyId = await computeKeyId(key, current.domain);
   return { ...current, configured: actualKeyId === current.keyId, setupLocked };
+}
+
+async function checkWorker(current: Settings): Promise<HealthResult> {
+  if (!current.workerOrigin) throw new Error("Connect the Worker first.");
+
+  const url = new URL("/health", current.workerOrigin);
+  if (current.domain) url.searchParams.set("domain", current.domain);
+
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+
+  let health: unknown;
+  try {
+    health = await response.json();
+  } catch {
+    throw new Error(`Worker health check failed with HTTP ${response.status}.`);
+  }
+  if (!health || typeof health !== "object") {
+    throw new Error("Worker returned an invalid health response.");
+  }
+
+  const parsed = health as WorkerHealth;
+  if (parsed.version !== "v1") {
+    throw new Error("The URL does not appear to be a mailias v1 Worker.");
+  }
+
+  const bindingsReady = parsed.configured?.secret === true && parsed.configured?.forwardTo === true;
+  const matches = Boolean(current.keyId && parsed.keyId === current.keyId);
+  const ready = parsed.status === "ok" && bindingsReady && matches;
+  return { health: parsed, matches, bindingsReady, ready };
 }
 
 async function handle(message: RequestMessage): Promise<object> {
@@ -120,34 +171,47 @@ async function handle(message: RequestMessage): Promise<object> {
       if (!key || !current.domain) throw new Error("mailias is not configured.");
       return { alias: await generateAlias(key, current.domain, message.label) };
     }
+    case "setDomain": {
+      const domain = normalizeDomain(message.domain);
+      const current = await settings();
+      const key = await getKey();
+      if (key || current.keyId) {
+        throw new Error("Reset mailias before changing the mail domain.");
+      }
+      await setStorage({ ...current, domain, setupComplete: false });
+      return { domain };
+    }
     case "importSecret": {
       const domain = normalizeDomain(message.domain);
       const key = await importSecret(message.secret);
       const keyId = await computeKeyId(key, domain);
       const current = await settings();
       const oldKey = await getKey();
-      if (oldKey || current.domain || current.keyId) {
-        throw new Error("Setup is already complete．Reset the extension before setting it up again．");
+      if (oldKey || current.keyId) {
+        throw new Error("A recovery key is already stored. Reset mailias before replacing it.");
       }
+      if (current.domain && current.domain !== domain) {
+        throw new Error("The recovery key must use the mail domain selected in step 2.");
+      }
+
       await putKey(key);
       const verified = await getKey();
       if (!verified || (await computeKeyId(verified, domain)) !== keyId) {
-        if (oldKey) await putKey(oldKey);
-        else await removeKey();
+        await removeKey();
         throw new Error("The key could not be verified after saving.");
       }
+
       try {
         await setStorage({
+          ...current,
           schemaVersion: 1,
           domain,
           keyId,
-          workerOrigin: current.workerOrigin,
-          emailRoutingConfirmed: current.emailRoutingConfirmed,
+          recoveryBackedUp: message.recoveryBackedUp === true,
           setupComplete: false,
         });
       } catch (error) {
-        if (oldKey) await putKey(oldKey);
-        else await removeKey();
+        await removeKey();
         throw error;
       }
       return { domain, keyId };
@@ -168,21 +232,23 @@ async function handle(message: RequestMessage): Promise<object> {
     }
     case "checkHealth": {
       const current = await settings();
-      if (!current.workerOrigin || !current.domain) throw new Error("Configure the Worker URL first.");
-      const url = new URL("/health", current.workerOrigin);
-      url.searchParams.set("domain", current.domain);
-      const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
-      if (!response.ok) throw new Error(`Worker health check failed with HTTP ${response.status}.`);
-      const health: unknown = await response.json();
-      if (!health || typeof health !== "object") throw new Error("Worker returned an invalid response.");
-      const parsed = health as WorkerHealth;
-      const matches = parsed.keyId === current.keyId;
-      const bindingsReady = parsed.configured?.secret === true && parsed.configured?.forwardTo === true;
-      const complete = Boolean(bindingsReady && matches && current.emailRoutingConfirmed);
-      if (complete && !current.setupComplete) {
-        await setStorage({ ...current, setupComplete: true });
+      return checkWorker(current);
+    }
+    case "finishSetup": {
+      const current = await settings();
+      const key = await getKey();
+      if (!key || !current.domain || !current.keyId || !current.recoveryBackedUp) {
+        throw new Error("Finish the recovery-key steps first.");
       }
-      return { health, matches, complete };
+      if (!current.emailRoutingConfirmed) {
+        throw new Error("Confirm Email Routing before finishing setup.");
+      }
+      const result = await checkWorker(current);
+      if (!result.ready) {
+        throw new Error("Worker configuration is not ready yet. Recheck step 5.");
+      }
+      await setStorage({ ...current, setupComplete: true });
+      return { complete: true };
     }
     case "reset":
       await deleteDatabase();
