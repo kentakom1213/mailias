@@ -1,13 +1,13 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import worker from "../src/worker";
+import worker, { type MailiasEnv } from "../src/worker";
 import { encodeSecret } from "../src/protocol";
 
 const secretBytes = Uint8Array.from({ length: 32 }, (_, index) => index);
 const env = {
   MAILIAS_SECRET: encodeSecret(secretBytes),
   FORWARD_TO: "owner@example.com",
-} satisfies Env;
+} satisfies MailiasEnv;
 
 describe("Worker health endpoint", () => {
   it("reports configuration without disclosing values", async () => {
@@ -24,7 +24,7 @@ describe("Worker health endpoint", () => {
   it("allows the Worker to boot before runtime bindings are configured", async () => {
     const response = await worker.fetch(
       new Request("https://mailias.example/health?domain=m.example.com"),
-      {} as Env,
+      {} satisfies MailiasEnv,
     );
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
@@ -71,7 +71,7 @@ describe("Worker email verification", () => {
       to: "github-v1-6e4du4hu@m.pwll.dev",
       forward: async (recipient: string) => { recipients.push(recipient); },
     } as unknown as ForwardableEmailMessage;
-    await worker.email(message, {} as Env);
+    await worker.email(message, {} satisfies MailiasEnv);
     expect(recipients).toEqual([]);
   });
 
