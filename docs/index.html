@@ -7,8 +7,9 @@
             name="description"
             content="mailiasは、自分のドメインから用途ごとのメールアドレスを作り、届いたメールを普段の受信箱へ転送するブラウザ拡張機能です。"
         />
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#F6821F" />
         <title>mailias — サービスごとに、違うアドレスを。</title>
+        <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
         <link rel="stylesheet" href="./style.css" />
     </head>
     <body>
@@ -96,11 +97,11 @@
                             </p>
                             <div class="inline-actions">
                                 <a
-                                    href="https://github.com/kentakom1213/mailias/releases/latest/download/mailias-chrome.zip"
-                                    >Chromeに追加</a
+                                    href="https://github.com/kentakom1213/mailias/releases/latest/download/mailias-chrome-extension.zip"
+                                    >Chrome版をダウンロード</a
                                 ><a
-                                    href="https://github.com/kentakom1213/mailias/releases/latest/download/mailias-firefox.zip"
-                                    >Firefoxに追加</a
+                                    href="https://github.com/kentakom1213/mailias/releases/latest/download/mailias-firefox-extension.zip"
+                                    >Firefox版をダウンロード</a
                                 >
                             </div>
                         </div>
@@ -108,18 +109,9 @@
                     <li>
                         <span class="number">02</span>
                         <div>
-                            <h3>秘密キーを作って保管する</h3>
+                            <h3>Workerをデプロイして公開URLを有効にする</h3>
                             <p>
-                                拡張機能で秘密キーを作り、パスワードマネージャーなどに保存します。<br />秘密キーを失うと、これまでと同じメールアドレスを再生成できません。
-                            </p>
-                        </div>
-                    </li>
-                    <li>
-                        <span class="number">03</span>
-                        <div>
-                            <h3>Workerをデプロイして設定する</h3>
-                            <p>
-                                Workerをデプロイし、秘密キーと転送先を設定します。
+                                Workerをデプロイした後、<code>workers.dev</code>を有効にするかCustom Domainを追加します。<br />拡張機能はこのHTTPS URLから<code>/health</code>を確認します。
                             </p>
                             <div class="inline-actions">
                                 <a
@@ -131,27 +123,46 @@
                         </div>
                     </li>
                     <li>
+                        <span class="number">03</span>
+                        <div>
+                            <h3>リカバリーキーを作って保管する</h3>
+                            <p>
+                                拡張機能でリカバリーキーを作り、パスワードマネージャーなどに保存します。<br />拡張機能画面で自動入力できない場合は、通常のブラウザタブでWorkerページを開くと、キーを送信せずにコピーするための補助欄を使えます。
+                            </p>
+                        </div>
+                    </li>
+                    <li>
                         <span class="number">04</span>
                         <div>
-                            <h3>
-                                <span class="term">Email Routing</span
-                                >を設定する
-                            </h3>
+                            <h3>Workerの変数を設定する</h3>
                             <p>
-                                対象ドメインの<span class="term"
-                                    >Email Routing</span
-                                >を有効にし、<br />catch-allを<span class="term"
-                                    >mailias Worker</span
-                                >へ送るように設定します。
+                                <code>MAILIAS_SECRET</code>にはリカバリーキーを<strong>Secret</strong>として設定します。<br /><code>FORWARD_TO</code>には転送先メールアドレスを通常の<strong>Variable</strong>として設定します。<code>FORWARD_TO</code>はSecretではありません。
                             </p>
                         </div>
                     </li>
                     <li>
                         <span class="number">05</span>
                         <div>
+                            <h3>
+                                <span class="term">Email Routing</span
+                                >を設定する
+                            </h3>
+                            <p>
+                                <code>m.example.com</code>のようなサブドメインを使う場合は、まずEmail Routingの<strong>Settings → Subdomains</strong>で追加します。<br />その後<strong>Routing Rules</strong>でcatch-allを有効にし、アクションを<strong>Send to a Worker</strong>にしてmailias Workerを選択します。
+                            </p>
+                            <div class="inline-actions">
+                                <a href="https://dash.cloudflare.com/?to=%2F%3Aaccount%2Femail-service%2Frouting"
+                                    >Email Routingを開く <span aria-hidden="true">↗</span></a
+                                >
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="number">06</span>
+                        <div>
                             <h3>サービス用のアドレスを作る</h3>
                             <p>
-                                区別しやすい名前を入力してアドレスを作り、そのアドレスをサービスに登録します。
+                                区別しやすいラベルを登録してアドレスを作り、そのアドレスをサービスに登録します。ラベルはポップアップだけでなく設定画面からも追加・確認できます。
                             </p>
                         </div>
                     </li>
