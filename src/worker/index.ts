@@ -144,11 +144,16 @@ export default {
 
     try {
       const key = await importSecret(bindings.secret);
-      if (!(await verifyAlias(key, message.to))) return;
+      const valid = await verifyAlias(key, message.to);
+      console.log(JSON.stringify({ event: "mailias_alias_verification", valid }));
+      if (!valid) return;
+
+      console.log(JSON.stringify({ event: "mailias_email_forward_start" }));
       await message.forward(bindings.forwardTo);
-    } catch {
-      console.error(JSON.stringify({ event: "mailias_email_error" }));
-      throw new Error("mailias email handling failed");
+      console.log(JSON.stringify({ event: "mailias_email_forward_success" }));
+    } catch (error) {
+      console.error("mailias email handling failed", error);
+      throw error;
     }
   },
 } satisfies ExportedHandler<MailiasEnv>;
