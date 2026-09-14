@@ -5,8 +5,11 @@ const DATABASE_NAME = "mailias-keys";
 const STORE_NAME = "keys";
 const ACTIVE_KEY = "active";
 
+type SetupLanguage = "" | "en" | "ja";
+
 type Settings = {
   schemaVersion: number;
+  language: SetupLanguage;
   domain: string;
   keyId: string;
   workerOrigin: string;
@@ -32,6 +35,7 @@ type HealthResult = {
 type RequestMessage =
   | { type: "getStatus" }
   | { type: "generateAlias"; label: string }
+  | { type: "setLanguage"; language: Exclude<SetupLanguage, ""> }
   | { type: "setDomain"; domain: string }
   | { type: "importSecret"; domain: string; secret: string; recoveryBackedUp?: boolean }
   | { type: "setWorkerOrigin"; workerOrigin: string }
@@ -101,6 +105,7 @@ async function deleteDatabase(): Promise<void> {
 async function settings(): Promise<Settings> {
   return getStorage<Settings>({
     schemaVersion: 1,
+    language: "",
     domain: "",
     keyId: "",
     workerOrigin: "",
@@ -170,6 +175,15 @@ async function handle(message: RequestMessage): Promise<object> {
       const key = await getKey();
       if (!key || !current.domain) throw new Error("mailias is not configured.");
       return { alias: await generateAlias(key, current.domain, message.label) };
+    }
+    case "setLanguage": {
+      if (message.language !== "en" && message.language !== "ja") {
+        throw new Error("Unsupported setup language.");
+      }
+      const current = await settings();
+      if (current.setupComplete) throw new Error("Reset mailias before changing the setup language.");
+      await setStorage({ ...current, language: message.language });
+      return { language: message.language };
     }
     case "setDomain": {
       const domain = normalizeDomain(message.domain);
