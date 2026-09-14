@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>mailias settings</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/extension-favicon.svg" />
     <link rel="stylesheet" href="./options.css" />
   </head>
   <body class="options">
@@ -51,6 +51,14 @@
               <div class="row-actions">
                 <a class="button primary button-link" data-i18n="step1.deploy" href="https://deploy.workers.cloudflare.com/?url=https://github.com/kentakom1213/mailias" target="_blank" rel="noreferrer">Deploy to Cloudflare</a>
               </div>
+              <div class="instruction-card">
+                <ol>
+                  <li data-i18n="step1.domainInstruction1">After deployment，open the Worker in Cloudflare and go to <strong>Domains</strong> (or <strong>Settings → Domains &amp; Routes</strong>)．</li>
+                  <li data-i18n="step1.domainInstruction2">Make sure the <code>workers.dev</code> domain is enabled，or add a Custom Domain．The extension needs a public HTTPS URL for <code>/health</code> and the setup helper page．</li>
+                  <li data-i18n="step1.domainInstruction3">Open that URL once in a normal browser tab，then paste the origin below．</li>
+                </ol>
+                <a class="button secondary button-link" data-i18n="step1.openWorkers" href="https://dash.cloudflare.com/?to=/:account/workers-and-pages" target="_blank" rel="noreferrer">Open Workers &amp; Pages</a>
+              </div>
               <label class="field-label" data-i18n="step1.workerUrl" for="worker-origin">Worker URL</label>
               <input class="text-input" id="worker-origin" type="url" placeholder="https://mailias.example.workers.dev" autocomplete="off" spellcheck="false" />
               <div class="step-actions"><button class="button primary" data-i18n="step1.connect" id="connect-worker" type="button">Connect Worker</button></div>
@@ -95,21 +103,21 @@
                 <input class="text-input" id="generated-secret" type="password" readonly />
                 <button class="button secondary" data-i18n="step4.copy" id="copy-secret" type="button">Copy</button>
               </div>
-              <p class="setting-help" data-i18n="step4.help">Create a password-manager entry now．You will retrieve this key again in the next step and paste it into Cloudflare．</p>
+              <p class="setting-help" data-i18n="step4.help">Extension pages are not always fillable by password managers．Copy the key and save it manually if needed．The Worker page opened in a normal tab also provides a password-manager-friendly helper and never submits the key．</p>
               <div class="step-actions"><button class="button primary" data-i18n="step4.saved" id="saved" type="button">I saved it in my password manager</button></div>
             </section>
 
             <section class="wizard-step hidden" id="step-5" data-step="5">
               <div class="step-kicker" data-i18n="step5.kicker">Step 5 of 7</div>
               <h1 class="step-title" data-i18n="step5.title">Configure the Worker</h1>
-              <p class="step-description" data-i18n="step5.description">Open your Worker in Cloudflare and add the two runtime bindings below．Retrieving the recovery key from your password manager here also confirms that your backup works．</p>
+              <p class="step-description" data-i18n="step5.description">Open your Worker in Cloudflare and add the two runtime bindings below．If your password manager does not work on extension pages，open the Worker URL from Step 1 in a normal tab and use its local helper to retrieve or copy the recovery key．</p>
 
               <div class="instruction-card">
                 <ol>
                   <li data-i18n="step5.instruction1">Open <strong>Workers &amp; Pages</strong> and select your mailias Worker．</li>
                   <li data-i18n="step5.instruction2">Open <strong>Settings → Variables and Secrets</strong>．</li>
                   <li data-i18n="step5.instruction3">Add <code>MAILIAS_SECRET</code> as a <strong>Secret</strong> using the recovery key from your password manager．</li>
-                  <li data-i18n="step5.instruction4">Add <code>FORWARD_TO</code> with the verified destination email address．</li>
+                  <li data-i18n="step5.instruction4">Add <code>FORWARD_TO</code> as a normal <strong>Variable</strong> with the verified destination email address．It is not a secret．</li>
                   <li data-i18n="step5.instruction5">Select <strong>Deploy</strong> in Cloudflare．</li>
                 </ol>
                 <a class="button primary button-link" data-i18n="step5.open" href="https://dash.cloudflare.com/?to=/:account/workers-and-pages" target="_blank" rel="noreferrer">Open Cloudflare Workers</a>
@@ -127,14 +135,15 @@
             <section class="wizard-step hidden" id="step-6" data-step="6">
               <div class="step-kicker" data-i18n="step6.kicker">Step 6 of 7</div>
               <h1 class="step-title" data-i18n="step6.title">Connect Email Routing</h1>
-              <p class="step-description" data-i18n="step6.description">In Cloudflare Email Routing，send the catch-all address for your mail domain to the mailias Worker．This routing rule is not visible through <code>/health</code>，so confirm it here after saving the rule．</p>
+              <p class="step-description" data-i18n="step6.description">Configure Email Routing for your mail domain．If you use a subdomain，enable it first，then route the catch-all address to the mailias Worker．</p>
               <div class="instruction-card">
                 <ol>
-                  <li data-i18n="step6.instruction1">Open Email Routing for <strong id="routing-domain">your mail domain</strong>．</li>
-                  <li data-i18n="step6.instruction2">Set the catch-all action to <strong>Send to a Worker</strong>．</li>
-                  <li data-i18n="step6.instruction3">Select your mailias Worker and save the rule．</li>
+                  <li data-i18n="step6.instruction1">Open Email Routing for the apex domain that contains <strong id="routing-domain">your mail domain</strong>．</li>
+                  <li data-i18n="step6.instruction2">If your mail domain is a subdomain such as <code>m.example.com</code>，open <strong>Settings → Subdomains</strong> and add that subdomain first．Wait until it is ready．</li>
+                  <li data-i18n="step6.instruction3">Open <strong>Routing Rules</strong> for the mail domain and enable the <strong>Catch-all</strong> rule．</li>
+                  <li data-i18n="step6.instruction4">Set the catch-all action to <strong>Send to a Worker</strong>，select your mailias Worker，and save．</li>
                 </ol>
-                <a class="button secondary button-link" data-i18n="step6.open" href="https://dash.cloudflare.com/" target="_blank" rel="noreferrer">Open Email Routing</a>
+                <a class="button secondary button-link" data-i18n="step6.open" href="https://dash.cloudflare.com/?to=%2F%3Aaccount%2Femail-service%2Frouting" target="_blank" rel="noreferrer">Open Email Routing</a>
               </div>
               <div class="step-actions"><button class="button primary" data-i18n="step6.confirm" id="confirm-routing" type="button">I configured Email Routing</button></div>
             </section>
