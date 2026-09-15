@@ -13,6 +13,7 @@
     "build:extension": "vite build && node scripts/package-extensions.mjs",
     "build:worker": "wrangler deploy --dry-run --outdir dist/worker",
     "package:extensions": "pnpm build:extension && node scripts/package-release.mjs",
+    "release:firefox": "pnpm build:extension && web-ext sign --source-dir dist/firefox --artifacts-dir dist/firefox-release --channel listed --no-input",
     "check": "pnpm types:worker && tsc --noEmit && vitest run",
     "dev:extension": "vite build --watch",
     "dev:worker": "wrangler dev",
@@ -36,6 +37,7 @@
     "typescript": "latest",
     "vite": "latest",
     "vitest": "latest",
+    "web-ext": "latest",
     "wrangler": "latest"
   },
   "dependencies": {

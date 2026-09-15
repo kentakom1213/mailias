@@ -40,7 +40,7 @@ const manifests = {
     background: { scripts: ["background.js"], type: "module" },
     browser_specific_settings: {
       gecko: {
-        id: "mailias@example.invalid",
+        id: "mailias@pwll.dev",
         strict_min_version: "121.0",
         data_collection_permissions: { required: ["none"] },
       },
