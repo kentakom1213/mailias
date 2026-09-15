@@ -2,10 +2,9 @@ import { render as renderMappings } from "./mapping-settings";
 import { generateSecret, normalizeDomain } from "../protocol";
 import { applySetupLanguage, type SetupLanguage } from "./i18n";
 import { requestOrigin, sendMessage } from "./platform";
-import { nextSetupStep, visibleSetupStep, type WizardStep } from "./setup-navigation";
+import { nextSetupStep, previousSetupStep, visibleSetupStep, type WizardStep } from "./setup-navigation";
 
 type Status = {
-  canUndoSettings?: boolean;
   configured: boolean;
   setupLocked: boolean;
   language?: SetupLanguage | "";
@@ -132,8 +131,6 @@ function renderWizard(status: Status): WizardStep {
   document.querySelector("#key-stored")!.classList.toggle("hidden", !status.setupLocked);
   document.querySelector("#backup-input")!.classList.toggle("hidden", status.setupLocked);
   document.querySelector("#backup-stored")!.classList.toggle("hidden", !status.setupLocked);
-  document.querySelector("#setup-next")!.classList.toggle("hidden",
-    step >= available || step === 1 || (step === 2 && !status.setupLocked));
   generatedSecret.value = setupSecret;
   const routingDomain = document.querySelector<HTMLElement>("#routing-domain");
   if (routingDomain) routingDomain.textContent = status.domain ?? localize("your mail domain", "メールドメイン");
@@ -177,7 +174,6 @@ async function refresh(_probeWorker = true): Promise<void> {
     document.querySelector<HTMLInputElement>("#existing-secret")!.value = "";
   }
   currentStatus = status;
-  document.querySelector<HTMLButtonElement>("#undo-settings")!.disabled = !status.canUndoSettings;
 
   const setupView = document.querySelector<HTMLElement>("#setup-view")!;
   const managementView = document.querySelector<HTMLElement>("#management-view")!;
@@ -250,15 +246,15 @@ function workerProblem(result: HealthResult): string {
   return localize("The Worker configuration is not ready yet.", "Worker の設定がまだ完了していません．");
 }
 
-function navigateSetup(direction: -1 | 1): void {
+function navigateBack(): void {
   if (!currentStatus || currentStatus.setupComplete || renderedStep === null) return;
-  if (direction === -1 && renderedStep === 1) {
+  if (renderedStep === 1) {
     choosingLanguage = true;
     document.querySelector("#language-view")!.classList.remove("hidden");
     document.querySelector("#setup-layout")!.classList.add("hidden");
     document.querySelector<HTMLButtonElement>("#language-en")!.focus();
   } else {
-    const next = Math.max(1, Math.min(currentStep(currentStatus), renderedStep + direction)) as WizardStep;
+    const next = previousSetupStep(renderedStep, currentStatus.setupLocked, Boolean(setupSecret));
     requestedStep = next;
     renderWizard(currentStatus);
     const heading = document.querySelector<HTMLElement>(`#step-${next} .step-title`)!;
@@ -268,8 +264,7 @@ function navigateSetup(direction: -1 | 1): void {
   showMessage("");
 }
 
-document.querySelector("#setup-back")!.addEventListener("click", () => navigateSetup(-1));
-document.querySelector("#setup-next")!.addEventListener("click", () => navigateSetup(1));
+document.querySelector("#setup-back")!.addEventListener("click", navigateBack);
 
 for (const language of ["en", "ja"] as const) {
   document.querySelector(`#language-${language}`)!.addEventListener("click", () => {
@@ -285,22 +280,66 @@ for (const language of ["en", "ja"] as const) {
   });
 }
 
+const deploymentStatus = document.querySelector<HTMLElement>("#deployment-status")!;
+const workerOriginInput = document.querySelector<HTMLInputElement>("#worker-origin")!;
+const continueWorker = document.querySelector<HTMLButtonElement>("#continue-worker")!;
+let checkedOrigin = "";
+
+workerOriginInput.addEventListener("input", () => {
+  checkedOrigin = "";
+  continueWorker.disabled = true;
+  deploymentStatus.textContent = "";
+});
+
+continueWorker.addEventListener("click", () => {
+  if (!currentStatus || !checkedOrigin || workerOriginInput.value.trim() !== checkedOrigin) return;
+  requestedStep = null;
+  renderWizard(currentStatus);
+  showMessage("");
+});
+
 document.querySelector("#connect-worker")!.addEventListener("click", () => {
+  const button = document.querySelector<HTMLButtonElement>("#connect-worker")!;
+  button.disabled = true;
+  continueWorker.disabled = true;
+  checkedOrigin = "";
+  requestedStep = 1;
   void (async () => {
-    const raw = document.querySelector<HTMLInputElement>("#worker-origin")!.value.trim();
+    const raw = workerOriginInput.value.trim();
     const url = new URL(raw);
-    if (url.protocol !== "https:" || url.pathname !== "/" || url.search || url.hash) {
+    if (url.protocol !== "https:" || url.pathname !== "/" || url.search || url.hash || url.username || url.password) {
       throw new Error(localize("Enter the HTTPS Worker origin without a path.", "パスを含まない HTTPS の Worker URL を入力してください．"));
     }
     const granted = await requestOrigin(url.origin);
-    if (!granted) throw new Error(localize("Permission to contact this Worker was not granted.", "この Worker へのアクセス権限が許可されませんでした．"));
     await sendMessage({ type: "setWorkerOrigin", workerOrigin: url.origin });
     lastHealth = null;
-    requestedStep = 2;
-    showMessage(localize("Worker connected.", "Worker に接続しました．"));
     await refresh(false);
-  })().catch((error: unknown) =>
-    showMessage(error instanceof Error ? error.message : localize("Could not connect the Worker.", "Worker に接続できませんでした．"), true));
+    if (workerOriginInput.value.trim() !== raw) return;
+    workerOriginInput.value = url.origin;
+    checkedOrigin = url.origin;
+    continueWorker.disabled = false;
+    showMessage("");
+    if (!granted) {
+      deploymentStatus.textContent = localize(
+        "Access was not granted, so deployment could not be checked. You can continue and check it later.",
+        "アクセス権限がないためデプロイ状態を確認できませんでした．このまま進み，後で確認できます．");
+      return;
+    }
+    deploymentStatus.textContent = localize("Checking deployment… You can continue while this runs.", "デプロイ状態を確認中です．待たずに先へ進むこともできます．");
+    try {
+      const result = await sendMessage<HealthResult>({ type: "checkHealth" });
+      if (checkedOrigin !== url.origin) return;
+      deploymentStatus.textContent = result.health.status === "ok"
+        ? localize("mailias Worker is deployed and responding. Secret and email settings will be checked in step 5.", "mailias Worker のデプロイと応答を確認できました．秘密キーとメールの設定はステップ 5 で確認します．")
+        : localize("The Worker responded, but reported an error. You can continue and check it later.", "Worker は応答しましたが，エラーを返しています．このまま進み，後で確認できます．");
+    } catch {
+      if (checkedOrigin !== url.origin) return;
+      deploymentStatus.textContent = localize("Deployment could not be confirmed. Check the URL and deployment status. You can continue and retry later.", "デプロイを確認できませんでした．URL とデプロイ状態を確認してください．このまま進み，後で再確認できます．");
+    }
+  })().catch((error: unknown) => {
+    deploymentStatus.textContent = "";
+    showMessage(error instanceof Error ? error.message : localize("Could not save the Worker URL.", "Worker URL を保存できませんでした．"), true);
+  }).finally(() => { button.disabled = false; });
 });
 
 document.querySelector("#save-domain")!.addEventListener("click", () => {
@@ -309,7 +348,7 @@ document.querySelector("#save-domain")!.addEventListener("click", () => {
     const domain = normalizeDomain(raw);
     await sendMessage({ type: "setDomain", domain });
     lastHealth = null;
-    requestedStep = 3;
+    requestedStep = setupSecret ? 4 : 3;
     showMessage(localize("Mail domain saved.", "メールドメインを保存しました．"));
     await refresh(false);
   })().catch((error: unknown) =>
@@ -394,24 +433,6 @@ document.querySelector("#finish-setup")!.addEventListener("click", () => {
     await refresh(false);
   })().catch((error: unknown) =>
     showMessage(error instanceof Error ? error.message : localize("Final setup check failed.", "最終確認に失敗しました．"), true));
-});
-
-document.querySelector("#undo-settings")!.addEventListener("click", () => {
-  const button = document.querySelector<HTMLButtonElement>("#undo-settings")!;
-  button.disabled = true;
-  void (async () => {
-    await sendMessage({ type: "undoSettings" });
-    requestedStep = null;
-    choosingLanguage = false;
-    lastHealth = null;
-    document.querySelector<HTMLInputElement>("#worker-origin")!.value = "";
-    document.querySelector<HTMLInputElement>("#mail-domain")!.value = "";
-    await refresh(false);
-    showMessage(localize("Previous saved settings restored.", "直前に保存されていた設定に戻しました．"));
-  })().catch((error: unknown) => {
-    button.disabled = !currentStatus?.canUndoSettings;
-    showMessage(error instanceof Error ? error.message : localize("Could not restore settings.", "設定を元に戻せませんでした．"), true);
-  });
 });
 
 document.querySelector("#reset")!.addEventListener("click", () => {

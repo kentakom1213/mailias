@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { nextSetupStep, visibleSetupStep, type SetupProgress } from "../src/extension/setup-navigation";
+import { nextSetupStep, previousSetupStep, visibleSetupStep, type SetupProgress } from "../src/extension/setup-navigation";
 
 const draft: SetupProgress = {
   workerOrigin: "https://worker.example.com", domain: "m.example.com",
@@ -25,4 +25,12 @@ it("allows reviewing saved key steps but does not skip the Worker check", () => 
   expect(visibleSetupStep(3, nextSetupStep(saved, false, false))).toBe(3);
   expect(visibleSetupStep(7, nextSetupStep(saved, false, false))).toBe(5);
   expect(visibleSetupStep(null, nextSetupStep(saved, false, true))).toBe(7);
+});
+
+it("returns to editable steps without requiring an extra next button", () => {
+  expect(previousSetupStep(4, false, true)).toBe(2);
+  expect(previousSetupStep(5, true, false)).toBe(1);
+  expect(previousSetupStep(6, true, false)).toBe(5);
+  expect(previousSetupStep(7, true, false)).toBe(6);
+  expect(previousSetupStep(3, false, false)).toBe(2);
 });

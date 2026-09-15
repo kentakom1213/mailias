@@ -23,3 +23,11 @@ export function nextSetupStep(status: SetupProgress, hasDraftKey: boolean, worke
 export function visibleSetupStep(requested: WizardStep | null, available: WizardStep): WizardStep {
   return requested === null || requested > available ? available : requested;
 }
+
+// Saved key/domain steps are locked; a draft key is kept when returning to the domain.
+export function previousSetupStep(step: WizardStep, locked: boolean, hasDraftKey: boolean): WizardStep {
+  let previous = Math.max(1, step - 1);
+  if (locked && previous >= 2 && previous <= 4) previous = 1;
+  if (!locked && hasDraftKey && previous === 3) previous = 2;
+  return previous as WizardStep;
+}

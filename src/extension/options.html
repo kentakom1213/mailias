@@ -59,7 +59,8 @@
               </div>
               <label class="field-label" data-i18n="step1.workerUrl" for="worker-origin">Worker URL</label>
               <input class="text-input" id="worker-origin" type="url" placeholder="https://mailias.example.workers.dev" autocomplete="off" spellcheck="false" />
-              <div class="step-actions"><button class="button primary" data-i18n="step1.connect" id="connect-worker" type="button">Connect Worker</button></div>
+              <div class="step-actions"><button class="button primary" data-i18n="step1.connect" id="connect-worker" type="button">Check deployment</button><button class="button secondary" data-i18n="step1.continue" id="continue-worker" type="button" disabled>Continue with this URL</button></div>
+              <p id="deployment-status" class="setting-help" role="status" aria-live="polite"></p>
             </section>
 
             <section class="wizard-step hidden" id="step-2" data-step="2">
@@ -135,7 +136,7 @@
               <div class="final-summary"><div><span data-i18n="step7.worker">Worker</span><strong id="final-worker">—</strong></div><div><span data-i18n="step7.domain">Mail domain</span><strong id="final-domain">—</strong></div><div><span data-i18n="step7.backup">Recovery key backup</span><strong data-i18n="step7.ready">Ready</strong></div><div><span data-i18n="step7.workerConfig">Worker configuration</span><strong data-i18n="step7.ready">Ready</strong></div><div><span data-i18n="step7.routing">Email Routing</span><strong data-i18n="step7.confirmed">Confirmed</strong></div></div>
               <div class="step-actions"><button id="finish-setup" class="button primary" data-i18n="step7.start" type="button">Start using mailias</button></div>
             </section>
-            <nav class="step-actions" aria-label="Setup navigation"><button id="setup-back" class="button secondary" type="button" data-i18n="navigation.back">Back</button><button id="setup-next" class="button secondary hidden" type="button" data-i18n="navigation.next">Next</button></nav>
+            <nav class="step-actions" aria-label="Setup navigation"><button id="setup-back" class="button secondary" type="button" data-i18n="navigation.back">Back</button></nav>
           </div>
         </div>
       </div>
@@ -145,10 +146,6 @@
         <div id="mapping-settings"></div>
         <section class="settings-section"><h2 class="section-title" data-i18n="management.resetTitle">Reset mailias</h2><p class="setting-help" data-i18n="management.resetDescription">This deletes the local key，Worker URL，setup state，and saved site/label mappings．You will need the recovery key from your password manager to restore it．</p><button id="reset" class="button danger" data-i18n="management.reset" type="button">Reset</button></section>
       </div>
-      <section class="settings-section" aria-label="Undo settings">
-        <button id="undo-settings" class="button secondary" type="button" disabled data-i18n="navigation.undo">Undo last settings save</button>
-        <p class="setting-help" data-i18n="navigation.undoHelp">Restore the previous saved Worker URL, mail domain, language, and setup confirmations. Key storage, reset, and alias mappings are not included.</p>
-      </section>
       <p id="message" class="message" role="status"></p>
     </main>
     <script type="module" src="./options.ts"></script>

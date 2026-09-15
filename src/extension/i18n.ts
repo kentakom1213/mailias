@@ -1,10 +1,7 @@
 export type SetupLanguage = "en" | "ja";
 
 const japanese: Record<string, string> = {
-  "navigation.undo": "直前の設定に戻す",
-  "navigation.undoHelp": "Worker URL，メールドメイン，言語，セットアップの確認状態を直前の保存内容に戻します．秘密キーの保存，リセット，エイリアスの対応表は対象外です．",
   "navigation.back": "戻る",
-  "navigation.next": "次へ",
   "navigation.keyStored": "秘密キーは保存済みです．保存済みのキーを使って次へ進めます．",
   "navigation.domainLocked": "秘密キーを保存したため，メールドメインは変更できません．",
   "navigation.backupStored": "秘密キーは保存済みです．Worker の設定には，パスワードマネージャーに保存したキーを使ってください．",
@@ -27,7 +24,8 @@ const japanese: Record<string, string> = {
   "step1.domainInstruction3": "その URL を通常のブラウザタブで一度開き，下の欄に origin を貼り付けます．",
   "step1.openWorkers": "Workers &amp; Pages を開く",
   "step1.workerUrl": "Worker URL",
-  "step1.connect": "Worker を接続",
+  "step1.connect": "デプロイ状態を確認",
+  "step1.continue": "この URL で続ける",
 
   "step2.kicker": "ステップ 2 / 7",
   "step2.title": "メールドメインを選択",
