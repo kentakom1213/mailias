@@ -1,3 +1,4 @@
+import { ICON_PNG_BASE64 } from "./icon";
 import { computeKeyId, importSecret, verifyAlias } from "../protocol";
 
 export interface MailiasEnv {
@@ -12,7 +13,7 @@ type RuntimeBindings = {
   myAddress?: string;
 };
 
-const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="mailias"><rect x="14" y="26" width="94" height="70" rx="12" fill="#163B67"/><path d="M17 32 61 65a6 6 0 0 0 7 0l37-31" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="95" cy="91" r="28" fill="#1677F0" stroke="#fff" stroke-width="5"/><text x="95" y="105" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="44" font-weight="700" fill="#fff">@</text></svg>`;
+
 
 function json(body: object, status = 200): Response {
   return Response.json(body, {
@@ -65,7 +66,7 @@ function workerPage(language: "en" | "ja"): Response {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${title}</title>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" href="/favicon.png">
 <style>
 :root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:light dark;--orange:#f6821f;--orange-hover:#df6f0f}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:Canvas;color:CanvasText}main{width:min(520px,calc(100% - 32px));padding:28px;border:1px solid color-mix(in srgb,CanvasText 12%,transparent);border-radius:16px;background:color-mix(in srgb,var(--orange) 4%,Canvas)}.brand{display:flex;align-items:center;gap:14px}.brand img{width:48px;height:48px}h1{margin:0;color:var(--orange);font-size:26px}p{line-height:1.65;color:color-mix(in srgb,CanvasText 72%,transparent)}a{color:var(--orange);font-weight:700;text-decoration:none}.actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:20px}.button{display:inline-flex;align-items:center;padding:9px 13px;border-radius:8px;background:var(--orange);color:white}.button:hover{background:var(--orange-hover)}.language-link{font-size:13px}
 </style>
@@ -83,9 +84,9 @@ function workerPage(language: "en" | "ja"): Response {
 }
 
 function favicon(): Response {
-  return new Response(ICON_SVG, {
+  return new Response(Uint8Array.from(atob(ICON_PNG_BASE64), (character) => character.charCodeAt(0)), {
     headers: {
-      "Content-Type": "image/svg+xml; charset=utf-8",
+      "Content-Type": "image/png",
       "Cache-Control": "public, max-age=86400",
       "Content-Security-Policy": "default-src 'none'",
     },
@@ -124,7 +125,7 @@ export default {
     if (request.method === "GET" && url.pathname === "/ja") {
       return workerPage("ja");
     }
-    if (request.method === "GET" && url.pathname === "/favicon.svg") {
+    if (request.method === "GET" && ["/favicon.png", "/favicon.ico", "/favicon.svg"].includes(url.pathname)) {
       return favicon();
     }
     if (request.method === "GET" && url.pathname === "/health") {

@@ -42,6 +42,7 @@ type RequestMessage =
   | { type: "setEmailRoutingConfirmed"; confirmed: boolean }
   | { type: "checkHealth" }
   | { type: "finishSetup" }
+  | { type: "undoSettings" }
   | { type: "reset" };
 
 function openDatabase(): Promise<IDBDatabase> {
@@ -103,7 +104,7 @@ async function deleteDatabase(): Promise<void> {
 }
 
 async function settings(): Promise<Settings> {
-  return getStorage<Settings>({
+  const defaults: Settings = {
     schemaVersion: 1,
     language: "",
     domain: "",
@@ -112,7 +113,21 @@ async function settings(): Promise<Settings> {
     recoveryBackedUp: false,
     emailRoutingConfirmed: false,
     setupComplete: false,
-  });
+  };
+  const stored = await getStorage<Settings>(defaults);
+  return Object.fromEntries(Object.keys(defaults).map((key) => [key, stored[key as keyof Settings]])) as Settings;
+}
+
+async function saveSettings(current: Settings, next: Settings): Promise<void> {
+  if (JSON.stringify(current) === JSON.stringify(next)) return;
+  await setStorage({ ...next, previousSettings: current });
+}
+
+async function previousSettings(current: Settings): Promise<Settings | null> {
+  const { previousSettings: previous } = await getStorage<{ previousSettings: Settings | null }>({ previousSettings: null });
+  if (!previous || previous.keyId !== current.keyId ||
+      (current.keyId && previous.domain !== current.domain)) return null;
+  return previous;
 }
 
 async function status(): Promise<object> {
@@ -125,11 +140,12 @@ async function status(): Promise<object> {
     await setStorage(current);
   }
 
+  const canUndoSettings = Boolean(await previousSettings(current));
   if (!key || !current.domain || !current.keyId) {
-    return { ...current, configured: false, setupLocked };
+    return { ...current, configured: false, setupLocked, canUndoSettings };
   }
   const actualKeyId = await computeKeyId(key, current.domain);
-  return { ...current, configured: actualKeyId === current.keyId, setupLocked };
+  return { ...current, configured: actualKeyId === current.keyId, setupLocked, canUndoSettings };
 }
 
 async function checkWorker(current: Settings): Promise<HealthResult> {
@@ -180,7 +196,7 @@ async function handle(message: RequestMessage): Promise<object> {
       }
       const current = await settings();
       if (current.setupComplete) throw new Error("Reset mailias before changing the setup language.");
-      await setStorage({ ...current, language: message.language });
+      await saveSettings(current, { ...current, language: message.language });
       return { language: message.language };
     }
     case "setDomain": {
@@ -190,7 +206,9 @@ async function handle(message: RequestMessage): Promise<object> {
       if (key || current.keyId) {
         throw new Error("Reset mailias before changing the mail domain.");
       }
-      await setStorage({ ...current, domain, setupComplete: false });
+      await saveSettings(current, { ...current, domain,
+        emailRoutingConfirmed: current.domain === domain && current.emailRoutingConfirmed,
+        setupComplete: false });
       return { domain };
     }
     case "importSecret": {
@@ -219,6 +237,7 @@ async function handle(message: RequestMessage): Promise<object> {
           schemaVersion: 1,
           domain,
           keyId,
+          previousSettings: null,
           recoveryBackedUp: message.recoveryBackedUp === true,
           setupComplete: false,
         });
@@ -234,12 +253,14 @@ async function handle(message: RequestMessage): Promise<object> {
         throw new Error("Enter an HTTPS Worker origin without a path.");
       }
       const current = await settings();
-      await setStorage({ ...current, workerOrigin: url.origin, setupComplete: false });
+      await saveSettings(current, { ...current, workerOrigin: url.origin,
+        emailRoutingConfirmed: current.workerOrigin === url.origin && current.emailRoutingConfirmed,
+        setupComplete: false });
       return { workerOrigin: url.origin };
     }
     case "setEmailRoutingConfirmed": {
       const current = await settings();
-      await setStorage({ ...current, emailRoutingConfirmed: message.confirmed, setupComplete: false });
+      await saveSettings(current, { ...current, emailRoutingConfirmed: message.confirmed, setupComplete: false });
       return { emailRoutingConfirmed: message.confirmed };
     }
     case "checkHealth": {
@@ -259,8 +280,22 @@ async function handle(message: RequestMessage): Promise<object> {
       if (!result.ready) {
         throw new Error("Worker configuration is not ready yet. Recheck step 5.");
       }
-      await setStorage({ ...current, setupComplete: true });
+      await saveSettings(current, { ...current, setupComplete: true });
       return { complete: true };
+    }
+    case "undoSettings": {
+      const current = await settings();
+      const previous = await previousSettings(current);
+      if (!previous) throw new Error("No previous settings are available.");
+      const key = await getKey();
+      if (key && (!previous.keyId || await computeKeyId(key, previous.domain) !== previous.keyId)) {
+        throw new Error("The previous settings do not match the saved key.");
+      }
+      if (previous.setupComplete && !(await checkWorker(previous)).ready) {
+        throw new Error("The previous Worker configuration is not ready. Check it before restoring settings.");
+      }
+      await setStorage({ ...previous, previousSettings: null });
+      return { restored: true };
     }
     case "reset":
       await deleteDatabase();

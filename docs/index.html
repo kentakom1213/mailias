@@ -5,18 +5,18 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta
             name="description"
-            content="mailiasは、自分のドメインから用途ごとのメールアドレスを作り、届いたメールを普段の受信箱へ転送するブラウザ拡張機能です。"
+            content="mailias は、自分のドメインと Cloudflare Workers で動かすセルフホストのメールエイリアスサービスです。"
         />
         <meta name="theme-color" content="#ffffff" />
         <title>mailias — サービスごとに、違うアドレスを。</title>
-        <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+        <link rel="icon" type="image/png" href="./icon.png" />
         <link rel="stylesheet" href="./style.css" />
     </head>
     <body>
         <a class="skip-link" href="#main">本文へ移動</a>
 
         <header class="site-header">
-            <a class="site-name" href="#top">mailias</a>
+            <a class="site-name" href="#top"><img src="./icon.png" width="32" height="32" alt="" /> mailias</a>
             <nav aria-label="メインナビゲーション">
                 <a href="#setup">使い始める</a>
                 <a href="https://github.com/kentakom1213/mailias"
@@ -32,7 +32,7 @@
                     自分のドメインで、サービスごとにメールアドレスを作れます。<br /><span
                         class="term"
                         >Cloudflare Worker</span
-                    >が宛先アドレスのタグを検証し、届いたメールをいつもの受信箱へ転送します。
+                    >が宛先アドレスを検証し、いつもの受信箱へ転送します。
                 </p>
 
                 <div
@@ -42,7 +42,7 @@
                     <span class="alias-input"><small>名前</small>github</span>
                     <span class="alias-arrow" aria-hidden="true">→</span>
                     <span class="alias-output"
-                        ><small>生成されるアドレス</small
+                        ><small>生成されるアドレスの例</small
                         ><code>github-v1-vtabvg6w@m.example.com</code></span
                     >
                 </div>
@@ -80,6 +80,14 @@
                         </div>
                     </li>
                 </ol>
+                <ul class="flow-notes" role="list">
+                    <li>
+                        自分のドメインで運用でき，外部のメールエイリアスサービスに依存しません．
+                    </li>
+                    <li>
+                        エイリアス情報を保存しない，シンプルなステートレス設計です．
+                    </li>
+                </ul>
             </section>
 
             <section id="setup">
@@ -120,7 +128,9 @@
                         <div>
                             <h3>Workerをデプロイして設定する</h3>
                             <p>
-                                Workerをデプロイし、<code>MAILIAS_SECRET</code>には秘密キーを<strong>Secret</strong>として設定します。<br /><code>MY_ADDRESS</code>には実際に受け取りたい自分のメールアドレスを通常の<strong>Variable</strong>として設定します。
+                                Workerをデプロイし、<code>MAILIAS_SECRET</code>には秘密キーを<strong>Secret</strong>として設定します。<br /><code
+                                    >MY_ADDRESS</code
+                                >には実際に受け取りたい自分のメールアドレスを通常の<strong>Variable</strong>として設定します。
                             </p>
                             <div class="inline-actions">
                                 <a
@@ -139,7 +149,8 @@
                                 >を設定する
                             </h3>
                             <p>
-                                サブドメインを使う場合は先に追加し、対象ドメインの<span class="term"
+                                サブドメインを使う場合は先に追加し、対象ドメインの<span
+                                    class="term"
                                     >Email Routing</span
                                 >でcatch-allを<span class="term"
                                     >mailias Worker</span

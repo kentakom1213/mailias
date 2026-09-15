@@ -2,8 +2,10 @@ import { render as renderMappings } from "./mapping-settings";
 import { generateSecret, normalizeDomain } from "../protocol";
 import { applySetupLanguage, type SetupLanguage } from "./i18n";
 import { requestOrigin, sendMessage } from "./platform";
+import { nextSetupStep, visibleSetupStep, type WizardStep } from "./setup-navigation";
 
 type Status = {
+  canUndoSettings?: boolean;
   configured: boolean;
   setupLocked: boolean;
   language?: SetupLanguage | "";
@@ -29,14 +31,14 @@ type HealthResult = {
   ready: boolean;
 };
 
-type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
-
 const message = document.querySelector<HTMLElement>("#message")!;
 const generatedSecret = document.querySelector<HTMLInputElement>("#generated-secret")!;
 let setupSecret = "";
 let lastHealth: HealthResult | null = null;
 let currentStatus: Status | null = null;
 let renderedStep: WizardStep | null = null;
+let requestedStep: WizardStep | null = null;
+let choosingLanguage = false;
 
 function localize(english: string, japanese: string): string {
   return currentStatus?.language === "ja" ? japanese : english;
@@ -65,13 +67,7 @@ function workerIsReady(): boolean {
 }
 
 function currentStep(status: Status): WizardStep {
-  if (!status.workerOrigin) return 1;
-  if (!status.domain) return 2;
-  if (!status.configured && !setupSecret) return 3;
-  if (!status.recoveryBackedUp) return 4;
-  if (!workerIsReady()) return 5;
-  if (!status.emailRoutingConfirmed) return 6;
-  return 7;
+  return nextSetupStep(status, Boolean(setupSecret), workerIsReady());
 }
 
 function renderProgress(status: Status, step: WizardStep): void {
@@ -90,10 +86,10 @@ function renderProgress(status: Status, step: WizardStep): void {
     const active = index === step;
     item.classList.toggle("done", done);
     item.classList.toggle("active", active);
-    state.textContent = done
-      ? localize("Done", "完了")
-      : active
-        ? localize("Current", "現在")
+    state.textContent = active
+      ? localize("Current", "現在")
+      : done
+        ? localize("Done", "完了")
         : localize("Pending", "未完了");
   }
 }
@@ -114,7 +110,9 @@ function renderWorkerChecks(): void {
 }
 
 function renderWizard(status: Status): WizardStep {
-  const step = currentStep(status);
+  const available = currentStep(status);
+  const step = visibleSetupStep(requestedStep, available);
+  renderedStep = step;
   renderProgress(status, step);
 
   for (const node of document.querySelectorAll<HTMLElement>(".wizard-step")) {
@@ -125,8 +123,17 @@ function renderWizard(status: Status): WizardStep {
   if (status.workerOrigin && !workerInput.value) workerInput.value = status.workerOrigin;
 
   const domainInput = document.querySelector<HTMLInputElement>("#mail-domain")!;
-  if (status.domain && !domainInput.value) domainInput.value = status.domain;
+  if (status.domain && (!domainInput.value || status.setupLocked)) domainInput.value = status.domain;
 
+  domainInput.readOnly = status.setupLocked;
+  document.querySelector("#save-domain")!.classList.toggle("hidden", status.setupLocked);
+  document.querySelector("#domain-locked")!.classList.toggle("hidden", !status.setupLocked);
+  document.querySelector("#key-choices")!.classList.toggle("hidden", status.setupLocked);
+  document.querySelector("#key-stored")!.classList.toggle("hidden", !status.setupLocked);
+  document.querySelector("#backup-input")!.classList.toggle("hidden", status.setupLocked);
+  document.querySelector("#backup-stored")!.classList.toggle("hidden", !status.setupLocked);
+  document.querySelector("#setup-next")!.classList.toggle("hidden",
+    step >= available || step === 1 || (step === 2 && !status.setupLocked));
   generatedSecret.value = setupSecret;
   const routingDomain = document.querySelector<HTMLElement>("#routing-domain");
   if (routingDomain) routingDomain.textContent = status.domain ?? localize("your mail domain", "メールドメイン");
@@ -138,7 +145,11 @@ function renderWizard(status: Status): WizardStep {
 
 async function checkWorkerConfiguration(showResult: boolean): Promise<void> {
   try {
+    const checkedStatus = currentStatus;
     const result = await sendMessage<HealthResult>({ type: "checkHealth" });
+    if (checkedStatus?.workerOrigin !== currentStatus?.workerOrigin ||
+        checkedStatus?.keyId !== currentStatus?.keyId || checkedStatus?.domain !== currentStatus?.domain) return;
+    if (showResult && result.ready && renderedStep === 5) requestedStep = 6;
     lastHealth = result;
     if (showResult) {
       if (result.ready) {
@@ -159,7 +170,14 @@ async function checkWorkerConfiguration(showResult: boolean): Promise<void> {
 
 async function refresh(_probeWorker = true): Promise<void> {
   const status = await sendMessage<Status>({ type: "getStatus" });
+  if (currentStatus && (currentStatus.workerOrigin !== status.workerOrigin ||
+      currentStatus.domain !== status.domain || currentStatus.keyId !== status.keyId)) lastHealth = null;
+  if (status.setupLocked) {
+    setupSecret = "";
+    document.querySelector<HTMLInputElement>("#existing-secret")!.value = "";
+  }
   currentStatus = status;
+  document.querySelector<HTMLButtonElement>("#undo-settings")!.disabled = !status.canUndoSettings;
 
   const setupView = document.querySelector<HTMLElement>("#setup-view")!;
   const managementView = document.querySelector<HTMLElement>("#management-view")!;
@@ -170,6 +188,8 @@ async function refresh(_probeWorker = true): Promise<void> {
   managementView.classList.toggle("hidden", status.setupComplete !== true);
 
   if (status.setupComplete) {
+    requestedStep = null;
+    choosingLanguage = false;
     applySetupLanguage(status.language === "ja" ? "ja" : "en");
     setupSecret = "";
     generatedSecret.value = "";
@@ -178,7 +198,7 @@ async function refresh(_probeWorker = true): Promise<void> {
     return;
   }
 
-  const language = status.language === "en" || status.language === "ja" ? status.language : null;
+  const language = !choosingLanguage && (status.language === "en" || status.language === "ja") ? status.language : null;
   languageView.classList.toggle("hidden", language !== null);
   setupLayout.classList.toggle("hidden", language === null);
 
@@ -230,10 +250,33 @@ function workerProblem(result: HealthResult): string {
   return localize("The Worker configuration is not ready yet.", "Worker の設定がまだ完了していません．");
 }
 
+function navigateSetup(direction: -1 | 1): void {
+  if (!currentStatus || currentStatus.setupComplete || renderedStep === null) return;
+  if (direction === -1 && renderedStep === 1) {
+    choosingLanguage = true;
+    document.querySelector("#language-view")!.classList.remove("hidden");
+    document.querySelector("#setup-layout")!.classList.add("hidden");
+    document.querySelector<HTMLButtonElement>("#language-en")!.focus();
+  } else {
+    const next = Math.max(1, Math.min(currentStep(currentStatus), renderedStep + direction)) as WizardStep;
+    requestedStep = next;
+    renderWizard(currentStatus);
+    const heading = document.querySelector<HTMLElement>(`#step-${next} .step-title`)!;
+    heading.tabIndex = -1;
+    heading.focus();
+  }
+  showMessage("");
+}
+
+document.querySelector("#setup-back")!.addEventListener("click", () => navigateSetup(-1));
+document.querySelector("#setup-next")!.addEventListener("click", () => navigateSetup(1));
+
 for (const language of ["en", "ja"] as const) {
   document.querySelector(`#language-${language}`)!.addEventListener("click", () => {
     void sendMessage({ type: "setLanguage", language }).then(
       async () => {
+        choosingLanguage = false;
+        requestedStep = 1;
         showMessage("");
         await refresh(false);
       },
@@ -253,6 +296,7 @@ document.querySelector("#connect-worker")!.addEventListener("click", () => {
     if (!granted) throw new Error(localize("Permission to contact this Worker was not granted.", "この Worker へのアクセス権限が許可されませんでした．"));
     await sendMessage({ type: "setWorkerOrigin", workerOrigin: url.origin });
     lastHealth = null;
+    requestedStep = 2;
     showMessage(localize("Worker connected.", "Worker に接続しました．"));
     await refresh(false);
   })().catch((error: unknown) =>
@@ -265,6 +309,7 @@ document.querySelector("#save-domain")!.addEventListener("click", () => {
     const domain = normalizeDomain(raw);
     await sendMessage({ type: "setDomain", domain });
     lastHealth = null;
+    requestedStep = 3;
     showMessage(localize("Mail domain saved.", "メールドメインを保存しました．"));
     await refresh(false);
   })().catch((error: unknown) =>
@@ -275,6 +320,7 @@ document.querySelector("#generate")!.addEventListener("click", () => {
   try {
     if (!currentStatus?.domain) throw new Error(localize("Choose the mail domain first.", "先にメールドメインを設定してください．"));
     setupSecret = generateSecret();
+    requestedStep = 4;
     generatedSecret.value = setupSecret;
     showMessage(localize("Recovery key generated. Save it before continuing.", "リカバリーキーを生成しました．続行する前に保存してください．"));
     if (currentStatus) renderWizard(currentStatus);
@@ -298,6 +344,7 @@ document.querySelector("#saved")!.addEventListener("click", () => {
     await importRecoveryKey(secret, true);
     setupSecret = "";
     generatedSecret.value = "";
+    requestedStep = 5;
     lastHealth = null;
     showMessage(localize(
       "Recovery key saved locally. Retrieve the password-manager copy in the next step and configure the Worker.",
@@ -315,6 +362,9 @@ document.querySelector("#restore")!.addEventListener("click", () => {
     if (!secret) throw new Error(localize("Paste the recovery key from your password manager.", "パスワードマネージャーからリカバリーキーを貼り付けてください．"));
     await importRecoveryKey(secret, true);
     input.value = "";
+    setupSecret = "";
+    generatedSecret.value = "";
+    requestedStep = 5;
     lastHealth = null;
     showMessage(localize("Existing recovery key restored.", "既存のリカバリーキーを復元しました．"));
     await refresh(false);
@@ -329,6 +379,7 @@ document.querySelector("#check-worker")!.addEventListener("click", () => {
 document.querySelector("#confirm-routing")!.addEventListener("click", () => {
   void sendMessage({ type: "setEmailRoutingConfirmed", confirmed: true }).then(
     async () => {
+      requestedStep = 7;
       showMessage(localize("Email Routing confirmed.", "Email Routing の設定を確認しました．"));
       await refresh(false);
     },
@@ -345,6 +396,24 @@ document.querySelector("#finish-setup")!.addEventListener("click", () => {
     showMessage(error instanceof Error ? error.message : localize("Final setup check failed.", "最終確認に失敗しました．"), true));
 });
 
+document.querySelector("#undo-settings")!.addEventListener("click", () => {
+  const button = document.querySelector<HTMLButtonElement>("#undo-settings")!;
+  button.disabled = true;
+  void (async () => {
+    await sendMessage({ type: "undoSettings" });
+    requestedStep = null;
+    choosingLanguage = false;
+    lastHealth = null;
+    document.querySelector<HTMLInputElement>("#worker-origin")!.value = "";
+    document.querySelector<HTMLInputElement>("#mail-domain")!.value = "";
+    await refresh(false);
+    showMessage(localize("Previous saved settings restored.", "直前に保存されていた設定に戻しました．"));
+  })().catch((error: unknown) => {
+    button.disabled = !currentStatus?.canUndoSettings;
+    showMessage(error instanceof Error ? error.message : localize("Could not restore settings.", "設定を元に戻せませんでした．"), true);
+  });
+});
+
 document.querySelector("#reset")!.addEventListener("click", () => {
   const prompt = localize(
     "Delete the local key，Worker URL，setup state，and saved site/label mappings? Make sure the recovery key is available in your password manager.",
@@ -356,6 +425,8 @@ document.querySelector("#reset")!.addEventListener("click", () => {
     lastHealth = null;
     currentStatus = null;
     renderedStep = null;
+    requestedStep = null;
+    choosingLanguage = false;
     generatedSecret.value = "";
     showMessage("");
     await refresh(false);

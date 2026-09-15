@@ -27,7 +27,14 @@ async function currentSiteDomain(): Promise<string | null> {
 function header(siteDomain?: string): HTMLElement {
   const node = el("header", "popup-header");
   const left = el("div");
-  append(left, el("div", "brand", "mailias"));
+  const brand = el("div", "brand");
+  const icon = el("img");
+  icon.src = "/icons/icon32.png";
+  icon.alt = "";
+  icon.width = 24;
+  icon.height = 24;
+  append(brand, icon, el("span", "", "mailias"));
+  append(left, brand);
   if (siteDomain) append(left, el("div", "site-domain", siteDomain));
   const settings = button("Settings", "text-button");
   settings.addEventListener("click", () => void openOptions());

@@ -107,11 +107,11 @@ async function sitesSection(state: ExtensionState): Promise<HTMLElement> {
     });
     append(item, main, remove);
 
-    const aliasList = el("div", "worker-check-list");
+    const aliasList = el("div", "site-alias-list");
     aliases.forEach((alias, index) => {
       const address = addresses[index];
       if (!address) return;
-      const row = el("div", "worker-check-row");
+      const row = el("div", "site-alias-row");
       const details = el("div");
       append(details, el("div", "setting-value", alias.label));
       append(details, el("div", "setting-help", address));

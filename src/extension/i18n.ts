@@ -1,6 +1,13 @@
 export type SetupLanguage = "en" | "ja";
 
 const japanese: Record<string, string> = {
+  "navigation.undo": "直前の設定に戻す",
+  "navigation.undoHelp": "Worker URL，メールドメイン，言語，セットアップの確認状態を直前の保存内容に戻します．秘密キーの保存，リセット，エイリアスの対応表は対象外です．",
+  "navigation.back": "戻る",
+  "navigation.next": "次へ",
+  "navigation.keyStored": "秘密キーは保存済みです．保存済みのキーを使って次へ進めます．",
+  "navigation.domainLocked": "秘密キーを保存したため，メールドメインは変更できません．",
+  "navigation.backupStored": "秘密キーは保存済みです．Worker の設定には，パスワードマネージャーに保存したキーを使ってください．",
   "page.subtitle": "拡張機能の設定",
   "progress.title": "セットアップの進捗",
   "progress.worker": "Worker を接続",

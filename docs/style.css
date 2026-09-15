@@ -241,6 +241,19 @@ p { margin: 0 0 18px; }
   text-wrap: pretty;
 }
 
+.flow-notes {
+  max-width: calc(700px - 3.1rem);
+  margin: 8px 0 0 3.1rem;
+  padding: .85rem 0;
+  border-block: 1px solid var(--line);
+  list-style: none;
+  color: var(--muted);
+  font-size: .92rem;
+  text-wrap: pretty;
+}
+
+.flow-notes li + li { margin-top: .4rem; }
+
 .setup-intro {
   max-width: 45em;
   text-wrap: pretty;
@@ -353,3 +366,6 @@ footer {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+.site-name { display: flex; align-items: center; gap: 8px; }
+.site-name img { flex-shrink: 0; }

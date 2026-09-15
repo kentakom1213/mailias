@@ -4,13 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>mailias settings</title>
-    <link rel="icon" type="image/svg+xml" href="/extension-favicon.svg" />
+    <link rel="icon" type="image/png" href="/icons/icon32.png" />
     <link rel="stylesheet" href="./options.css" />
   </head>
   <body class="options">
     <header class="page-header">
       <div class="page-width">
-        <div class="page-title">mailias</div>
+        <div class="page-title"><img src="/icons/icon48.png" width="32" height="32" alt="" /> mailias</div>
         <div class="page-subtitle" data-i18n="page.subtitle">Extension settings</div>
       </div>
     </header>
@@ -68,6 +68,7 @@
               <p class="step-description" data-i18n="step2.description">Enter the domain that will receive mailias addresses，for example <code>m.example.com</code>．</p>
               <label class="field-label" data-i18n="step2.domain" for="mail-domain">Mail domain</label>
               <input class="text-input" id="mail-domain" placeholder="m.example.com" autocomplete="off" spellcheck="false" />
+              <p id="domain-locked" class="setting-help hidden" data-i18n="navigation.domainLocked">The mail domain is locked because the recovery key is saved.</p>
               <div class="step-actions"><button class="button primary" data-i18n="step2.save" id="save-domain" type="button">Save domain</button></div>
             </section>
 
@@ -75,7 +76,8 @@
               <div class="step-kicker" data-i18n="step3.kicker">Step 3 of 7</div>
               <h1 class="step-title" data-i18n="step3.title">Set up your recovery key</h1>
               <p class="step-description" data-i18n="step3.description">Create a new key for a new installation，or restore an existing key from your password manager．</p>
-              <div class="choice-grid">
+              <p id="key-stored" class="setting-help hidden" data-i18n="navigation.keyStored">The recovery key is already saved. Continue with the existing key.</p>
+              <div id="key-choices" class="choice-grid">
                 <div class="choice-card"><h2 data-i18n="step3.newTitle">New setup</h2><p data-i18n="step3.newDescription">Generate a random recovery key locally in this extension．</p><button class="button primary" data-i18n="step3.generate" id="generate" type="button">Generate new key</button></div>
                 <div class="choice-card"><h2 data-i18n="step3.restoreTitle">Restore existing setup</h2><p data-i18n="step3.restoreDescription">Paste the recovery key already stored in your password manager．</p><label class="field-label" data-i18n="step3.recoveryKey" for="existing-secret">Recovery key</label><input class="text-input" id="existing-secret" type="password" autocomplete="off" /><button class="button secondary" data-i18n="step3.restore" id="restore" type="button">Use existing key</button></div>
               </div>
@@ -85,11 +87,14 @@
               <div class="step-kicker" data-i18n="step4.kicker">Step 4 of 7</div>
               <h1 class="step-title" data-i18n="step4.title">Back up the recovery key</h1>
               <p class="step-description" data-i18n="step4.description">Save this key in your password manager before continuing．After this step，mailias stores only a non-exportable key in the extension．</p>
+              <p id="backup-stored" class="setting-help hidden" data-i18n="navigation.backupStored">The key has already been saved. Retrieve your backup from your password manager when configuring the Worker.</p>
+              <div id="backup-input">
               <div class="warning-box" data-i18n="step4.warning"><strong>This is the only time mailias will show the raw recovery key．</strong></div>
               <label class="field-label" data-i18n="step4.recoveryKey" for="generated-secret">Recovery key</label>
               <div class="secret-row"><input class="text-input" id="generated-secret" type="password" readonly /><button class="button secondary" data-i18n="step4.copy" id="copy-secret" type="button">Copy</button></div>
               <p class="setting-help" data-i18n="step4.help">Copy the recovery key and save it manually in your password manager．Keep that entry as your only recovery copy．</p>
               <div class="step-actions"><button class="button primary" data-i18n="step4.saved" id="saved" type="button">I saved it in my password manager</button></div>
+              </div>
             </section>
 
             <section class="wizard-step hidden" id="step-5" data-step="5">
@@ -130,7 +135,7 @@
               <div class="final-summary"><div><span data-i18n="step7.worker">Worker</span><strong id="final-worker">—</strong></div><div><span data-i18n="step7.domain">Mail domain</span><strong id="final-domain">—</strong></div><div><span data-i18n="step7.backup">Recovery key backup</span><strong data-i18n="step7.ready">Ready</strong></div><div><span data-i18n="step7.workerConfig">Worker configuration</span><strong data-i18n="step7.ready">Ready</strong></div><div><span data-i18n="step7.routing">Email Routing</span><strong data-i18n="step7.confirmed">Confirmed</strong></div></div>
               <div class="step-actions"><button id="finish-setup" class="button primary" data-i18n="step7.start" type="button">Start using mailias</button></div>
             </section>
-            <p id="message" class="message" role="status"></p>
+            <nav class="step-actions" aria-label="Setup navigation"><button id="setup-back" class="button secondary" type="button" data-i18n="navigation.back">Back</button><button id="setup-next" class="button secondary hidden" type="button" data-i18n="navigation.next">Next</button></nav>
           </div>
         </div>
       </div>
@@ -140,6 +145,11 @@
         <div id="mapping-settings"></div>
         <section class="settings-section"><h2 class="section-title" data-i18n="management.resetTitle">Reset mailias</h2><p class="setting-help" data-i18n="management.resetDescription">This deletes the local key，Worker URL，setup state，and saved site/label mappings．You will need the recovery key from your password manager to restore it．</p><button id="reset" class="button danger" data-i18n="management.reset" type="button">Reset</button></section>
       </div>
+      <section class="settings-section" aria-label="Undo settings">
+        <button id="undo-settings" class="button secondary" type="button" disabled data-i18n="navigation.undo">Undo last settings save</button>
+        <p class="setting-help" data-i18n="navigation.undoHelp">Restore the previous saved Worker URL, mail domain, language, and setup confirmations. Key storage, reset, and alias mappings are not included.</p>
+      </section>
+      <p id="message" class="message" role="status"></p>
     </main>
     <script type="module" src="./options.ts"></script>
   </body>
