@@ -50,13 +50,14 @@ function configuredBindings(bindings: RuntimeBindings): { secret: boolean; myAdd
 
 function workerPage(language: "en" | "ja"): Response {
   const japanese = language === "ja";
-  const title = japanese ? "mailias Worker" : "mailias Worker";
+  const title = "mailias Worker";
   const message = japanese
     ? "Worker は稼働しています．初期設定とエイリアス管理は mailias ブラウザ拡張から行ってください．"
     : "The Worker is running. Complete setup and manage aliases from the mailias browser extension.";
+  const extensionLabel = japanese ? "ブラウザ拡張を入手" : "Get the browser extension";
   const languageLink = japanese
-    ? '<a href="/">English</a>'
-    : '<a href="/ja">日本語</a>';
+    ? '<a class="language-link" href="/">English</a>'
+    : '<a class="language-link" href="/ja">日本語</a>';
 
   const html = `<!doctype html>
 <html lang="${language}">
@@ -66,10 +67,10 @@ function workerPage(language: "en" | "ja"): Response {
 <title>${title}</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <style>
-:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:light dark;--orange:#f6821f}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:Canvas;color:CanvasText}main{width:min(520px,calc(100% - 32px));padding:28px;border:1px solid color-mix(in srgb,CanvasText 12%,transparent);border-radius:16px;background:color-mix(in srgb,var(--orange) 4%,Canvas)}.brand{display:flex;align-items:center;gap:14px}.brand img{width:48px;height:48px}h1{margin:0;color:var(--orange);font-size:26px}p{line-height:1.65;color:color-mix(in srgb,CanvasText 72%,transparent)}a{color:var(--orange);font-weight:700;text-decoration:none}
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:light dark;--orange:#f6821f;--orange-hover:#df6f0f}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:Canvas;color:CanvasText}main{width:min(520px,calc(100% - 32px));padding:28px;border:1px solid color-mix(in srgb,CanvasText 12%,transparent);border-radius:16px;background:color-mix(in srgb,var(--orange) 4%,Canvas)}.brand{display:flex;align-items:center;gap:14px}.brand img{width:48px;height:48px}h1{margin:0;color:var(--orange);font-size:26px}p{line-height:1.65;color:color-mix(in srgb,CanvasText 72%,transparent)}a{color:var(--orange);font-weight:700;text-decoration:none}.actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:20px}.button{display:inline-flex;align-items:center;padding:9px 13px;border-radius:8px;background:var(--orange);color:white}.button:hover{background:var(--orange-hover)}.language-link{font-size:13px}
 </style>
 </head>
-<body><main><div class="brand"><img src="/favicon.svg" alt=""><h1>${title}</h1></div><p>${message}</p>${languageLink}</main></body>
+<body><main><div class="brand"><img src="/favicon.svg" alt=""><h1>${title}</h1></div><p>${message}</p><div class="actions"><a class="button" href="https://kentakom1213.github.io/mailias/#setup" target="_blank" rel="noreferrer">${extensionLabel}</a>${languageLink}</div></main></body>
 </html>`;
   return new Response(html, {
     headers: {
