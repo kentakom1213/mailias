@@ -369,3 +369,12 @@ footer {
 
 .site-name { display: flex; align-items: center; gap: 8px; }
 .site-name img { flex-shrink: 0; }
+
+/* Shared navigation and policy layouts. */
+.site-header, footer { flex-wrap: wrap; gap: 16px; }
+nav { flex-wrap: wrap; gap: .7rem 1.4rem; }
+.policy { max-width: 760px; }
+.policy section { padding: 24px 0; }
+.policy h2 { margin-bottom: 14px; }
+.policy li + li { margin-top: 12px; }
+.policy p, .policy li { overflow-wrap: anywhere; }

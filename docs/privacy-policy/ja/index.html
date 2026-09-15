@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="プライバシーポリシー — mailias" />
+        <meta name="theme-color" content="#ffffff" />
+        <title>プライバシーポリシー — mailias</title>
+        <link rel="icon" type="image/png" href="../../icon.png" />
+        <link rel="stylesheet" href="../../style.css" />
+    </head>
+    <body>
+        <a class="skip-link" href="#main">本文へ移動</a>
+        <header class="site-header">
+            <a class="site-name" href="../../ja/"
+                ><img src="../../icon.png" width="32" height="32" alt="" />
+                mailias</a
+            >
+            <nav aria-label="ナビゲーション">
+                <a href="../" lang="en" hreflang="en">English</a
+                ><a href="https://github.com/kentakom1213/mailias">GitHub ↗</a>
+            </nav>
+        </header>
+        <main id="main">
+            <article class="policy">
+                <section class="intro">
+                    <h1>プライバシーポリシー</h1>
+                    <p class="summary">最終更新日：2026年9月15日</p>
+                </section>
+                <section>
+                    <h2>適用範囲</h2>
+                    <p>
+                        このポリシーは mailias
+                        ブラウザ拡張とプロジェクトのウェブサイトを対象とし，利用者自身の
+                        Cloudflare アカウントにデプロイする標準の mailias Worker
+                        のデータ処理も説明します．mailias
+                        はセルフホスト型のオープンソースのメールエイリアスツールです．開発者は拡張機能の利用者向けにエイリアスやメールの中央サービスを運営していません．
+                    </p>
+                </section>
+                <section>
+                    <h2>端末内で扱うデータ</h2>
+                    <ul>
+                        <li>
+                            メールドメイン，Worker
+                            URL，キー識別子，表示言語，セットアップ状態をブラウザのローカルストレージに保存します．
+                        </li>
+                        <li>
+                            秘密キーは抽出不可の暗号鍵として取り込み，拡張機能の
+                            IndexedDB
+                            に保存します．エイリアス生成とキー識別子の確認に端末内で使用します．
+                        </li>
+                        <li>
+                            ポップアップを開くと現在のタブの URL
+                            を読み取り，サイトのドメインを判定してラベルの候補や保存済みエイリアスを表示します．サイトのドメイン，ラベル，レコード識別子，作成日時，最終使用日時を端末内に保存します．タブの完全な
+                            URL
+                            は保存せず，バックグラウンドで閲覧履歴を収集しません．
+                        </li>
+                        <li>
+                            コピー操作では選択したエイリアスや秘密キーをクリップボードに書き込みます．対応表のインポートとエクスポートでは，メールドメイン，サイトとラベルの対応，日時を含むファイルを読み込み・作成します．エクスポートに秘密キーは含みません．
+                        </li>
+                    </ul>
+                    <p>
+                        これらのデータはエイリアス生成，初期設定，端末内でのエイリアス管理に使用します．ブラウザの同期機能によるアップロードは行いません．
+                    </p>
+                </section>
+                <section>
+                    <h2>通信とメールの処理</h2>
+                    <p>
+                        利用者の許可を得て，指定された Worker URL に HTTPS
+                        で接続し，到達可能性と設定状態を確認します．メールドメインが設定済みであれば確認リクエストに含めます．Worker
+                        は設定の有無と派生したキー識別子を返し，拡張機能が照合します．この通信で秘密キー，保存済みのサイトとラベルの対応表，現在のタブの
+                        URL
+                        を送信することはありません．通常のネットワーク通信と同様に，接続先の基盤は
+                        IP
+                        アドレスやリクエストの付随情報を受け取ることがあります．
+                    </p>
+                    <p>
+                        秘密キーと転送先メールアドレスは，利用者が別途自分の
+                        Cloudflare の設定に入力します．Cloudflare Email Routing
+                        と Worker
+                        は受信メールと宛先を処理し，エイリアスを検証して有効なメールを指定先へ転送します．拡張機能自体は受信箱やメール本文を読み取りません．標準の
+                        Worker
+                        にエイリアスやメールを永続保存するデータベースはありません．処理イベントとエラーをログに出力しており，Cloudflare
+                        の基盤やログ設定によってリクエストやエラーの情報が保持される場合があります．
+                    </p>
+                </section>
+                <section>
+                    <h2>共有と利用目的の制限</h2>
+                    <p>
+                        拡張機能に広告，アクセス解析，追跡用 SDK
+                        は含まれず，利用状況を開発者へ送信しません．利用者データの販売，広告への利用，信用力や融資の判断を目的とする移転は行いません．データの利用は，本ポリシーで説明するエイリアス機能と初期設定の提供に限定し，Limited
+                        Use 要件を含む Chrome Web Store
+                        のユーザーデータポリシーに従います．
+                    </p>
+                    <p>
+                        Cloudflare は利用者が設定した Worker
+                        とメール転送のためにデータを処理します．転送先のメールサービスは転送されたメールを処理します．各サービスにはそれぞれの利用規約とプライバシーポリシーが適用されます．開発者が拡張機能を通じて利用者のセルフホスト環境の設定やメールへアクセスすることはありません．
+                    </p>
+                </section>
+                <section>
+                    <h2>保存期間と削除</h2>
+                    <p>
+                        ローカル設定と暗号鍵は mailias
+                        のリセットや拡張機能データの削除まで保持します．設定画面で個別のサイトとラベルの記録を削除できます．mailias
+                        をリセットすると端末内の設定，記録，暗号鍵を削除します．ラベルの削除だけでは
+                        Worker 側でそのアドレスは無効になりません．
+                    </p>
+                    <p>
+                        拡張機能のリセットでは，Cloudflare の
+                        Worker，変数，秘密キー，サービス側のログ，転送済みメール，エクスポートしたファイル，クリップボード，パスワードマネージャーのバックアップは削除されません．これらは各サービスや端末で別途管理・削除してください．サービス側の保存期間は各社のポリシーと利用者の設定によります．
+                    </p>
+                </section>
+                <section>
+                    <h2>ウェブサイトとお問い合わせ</h2>
+                    <p>
+                        プロジェクトのウェブサイトにアクセス解析スクリプト，追跡用ピクセル，アプリケーションの
+                        Cookie
+                        はありません．ページの配信に際して，ホスティング事業者が
+                        IP
+                        アドレスやリクエストの付随情報を処理する場合があります．開発者への連絡や
+                        GitHub Issue
+                        に利用者が自ら記載した情報は，回答とプロジェクトの保守に使用します．GitHub
+                        Issue
+                        は公開されるため，秘密キーや非公開のメール本文は記載しないでください．
+                    </p>
+                </section>
+                <section>
+                    <h2>変更と連絡先</h2>
+                    <p>
+                        データの取り扱いを変更した場合はこのページを更新し，上部の改定日を変更します．プライバシーについてのお問い合わせは，<a
+                            href="https://github.com/kentakom1213/mailias/issues"
+                            >mailias の Issue</a
+                        >
+                        から開発者へご連絡ください．
+                    </p>
+                <p>メール：<a href="mailto:contact@pwll.dev">contact@pwll.dev</a></p>
+                </section>
+            </article>
+        </main>
+        <footer>
+            <span>© mailias 2026</span><a href="./">プライバシーポリシー</a
+            ><a href="https://github.com/kentakom1213/mailias">GitHub</a>
+        </footer>
+    </body>
+</html>

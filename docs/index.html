@@ -1,115 +1,112 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta
             name="description"
-            content="mailias は、自分のドメインと Cloudflare Workers で動かすセルフホストのメールエイリアスサービスです。"
+            content="mailias is a self-hosted email alias tool using your own domain and Cloudflare Workers."
         />
         <meta name="theme-color" content="#ffffff" />
-        <title>mailias — サービスごとに、違うアドレスを。</title>
+        <title>A different address for every service — mailias</title>
         <link rel="icon" type="image/png" href="./icon.png" />
         <link rel="stylesheet" href="./style.css" />
     </head>
     <body>
-        <a class="skip-link" href="#main">本文へ移動</a>
-
+        <a class="skip-link" href="#main">Skip to content</a>
         <header class="site-header">
-            <a class="site-name" href="#top"><img src="./icon.png" width="32" height="32" alt="" /> mailias</a>
-            <nav aria-label="メインナビゲーション">
-                <a href="#setup">使い始める</a>
-                <a href="https://github.com/kentakom1213/mailias"
-                    >GitHub <span aria-hidden="true">↗</span></a
-                >
+            <a class="site-name" href="./"
+                ><img src="./icon.png" width="32" height="32" alt="" />
+                mailias</a
+            >
+            <nav aria-label="Navigation">
+                <a href="./ja/" lang="ja" hreflang="ja">日本語</a
+                ><a href="https://github.com/kentakom1213/mailias">GitHub ↗</a>
             </nav>
         </header>
-
         <main id="main">
             <section class="intro" id="top">
-                <h1>サービスごとに、違うアドレスを。</h1>
+                <h1>A different address for every service.</h1>
                 <p class="summary">
-                    自分のドメインで、サービスごとにメールアドレスを作れます。<br /><span
-                        class="term"
-                        >Cloudflare Worker</span
-                    >が宛先アドレスを検証し、いつもの受信箱へ転送します。
+                    Create email aliases on your own domain. Your Cloudflare
+                    Worker verifies each address and forwards valid messages to
+                    your usual inbox.
                 </p>
-
-                <div
-                    class="alias-example"
-                    aria-label="mailiasで作るメールアドレスの例"
-                >
-                    <span class="alias-input"><small>名前</small>github</span>
-                    <span class="alias-arrow" aria-hidden="true">→</span>
-                    <span class="alias-output"
-                        ><small>生成されるアドレスの例</small
+                <div class="alias-example" aria-label="Example mailias address">
+                    <span class="alias-input"><small>Label</small>github</span
+                    ><span class="alias-arrow" aria-hidden="true">→</span
+                    ><span class="alias-output"
+                        ><small>Example alias</small
                         ><code>github-v1-vtabvg6w@m.example.com</code></span
                     >
                 </div>
             </section>
-
             <section>
-                <h2>しくみ</h2>
+                <h2>How it works</h2>
                 <ol class="flow">
                     <li>
                         <span class="number">01</span>
                         <div>
-                            <h3>サービスごとのアドレスを作る</h3>
-                            <p>アドレスはブラウザの中だけで生成します。</p>
+                            <h3>Create an address for a service</h3>
+                            <p>
+                                Aliases are generated locally in your browser.
+                            </p>
                         </div>
                     </li>
                     <li>
                         <span class="number">02</span>
                         <div>
-                            <h3>
-                                <span class="term">Cloudflare Worker</span
-                                >でタグを検証する
-                            </h3>
+                            <h3>Verify the address tag</h3>
                             <p>
-                                メールが届くと、Workerが宛先アドレスのタグを検証します。
+                                When mail arrives, your Cloudflare Worker checks
+                                the tag in its recipient address.
                             </p>
                         </div>
                     </li>
                     <li>
                         <span class="number">03</span>
                         <div>
-                            <h3>受信箱へ転送する</h3>
+                            <h3>Forward to your inbox</h3>
                             <p>
-                                タグが正しければ、メールを設定した転送先へ送ります。
+                                Valid messages are forwarded to the destination
+                                you configured.
                             </p>
                         </div>
                     </li>
                 </ol>
-                <ul class="flow-notes" role="list">
+                <ul class="flow-notes">
                     <li>
-                        自分のドメインで運用でき，外部のメールエイリアスサービスに依存しません．
+                        Use your own domain without a separate email alias
+                        provider.
                     </li>
                     <li>
-                        エイリアス情報を保存しない，シンプルなステートレス設計です．
+                        The Worker does not need an alias database. Site labels
+                        are managed locally in the extension.
                     </li>
                 </ul>
             </section>
-
             <section id="setup">
-                <h2>使い始める</h2>
-                <p class="setup-intro">
-                    Cloudflareで管理しているドメインと、転送先のメールアドレスが必要です。
+                <h2>Get started</h2>
+                <p>
+                    You need a domain managed with Cloudflare and a destination
+                    email address.
                 </p>
                 <ol class="setup-steps">
                     <li>
                         <span class="number">01</span>
                         <div>
-                            <h3>拡張機能をインストールする</h3>
+                            <h3>Install the extension</h3>
                             <p>
-                                ChromeまたはFirefoxにmailiasをインストールし、設定画面を開きます。
+                                Install mailias for Chrome or Firefox and open
+                                its settings.
                             </p>
                             <div class="inline-actions">
                                 <a
                                     href="https://github.com/kentakom1213/mailias/releases/latest/download/mailias-extension-chrome.zip"
-                                    >Chrome版をダウンロード</a
+                                    >Download for Chrome</a
                                 ><a
                                     href="https://github.com/kentakom1213/mailias/releases/latest/download/mailias-extension-firefox.zip"
-                                    >Firefox版をダウンロード</a
+                                    >Download for Firefox</a
                                 >
                             </div>
                         </div>
@@ -117,26 +114,30 @@
                     <li>
                         <span class="number">02</span>
                         <div>
-                            <h3>秘密キーを作って保管する</h3>
+                            <h3>Create and back up your secret key</h3>
                             <p>
-                                拡張機能で秘密キーを作り、パスワードマネージャーなどに保存します。<br />秘密キーを失うと、これまでと同じメールアドレスを再生成できません。
+                                Generate a secret key in the extension and save
+                                it in your password manager. You need the same
+                                key to regenerate existing aliases.
                             </p>
                         </div>
                     </li>
                     <li>
                         <span class="number">03</span>
                         <div>
-                            <h3>Workerをデプロイして設定する</h3>
+                            <h3>Deploy and configure your Worker</h3>
                             <p>
-                                Workerをデプロイし、<code>MAILIAS_SECRET</code>には秘密キーを<strong>Secret</strong>として設定します。<br /><code
-                                    >MY_ADDRESS</code
-                                >には実際に受け取りたい自分のメールアドレスを通常の<strong>Variable</strong>として設定します。
+                                Deploy the Worker. Set
+                                <code>MAILIAS_SECRET</code> to your secret key
+                                as a <strong>Secret</strong>, and
+                                <code>MY_ADDRESS</code> to your destination
+                                email address as a regular
+                                <strong>Variable</strong>.
                             </p>
                             <div class="inline-actions">
                                 <a
                                     href="https://deploy.workers.cloudflare.com/?url=https://github.com/kentakom1213/mailias"
-                                    >Deploy Worker to Cloudflare
-                                    <span aria-hidden="true">↗</span></a
+                                    >Deploy Worker to Cloudflare ↗</a
                                 >
                             </div>
                         </div>
@@ -144,68 +145,59 @@
                     <li>
                         <span class="number">04</span>
                         <div>
-                            <h3>
-                                <span class="term">Email Routing</span
-                                >を設定する
-                            </h3>
+                            <h3>Set up Email Routing</h3>
                             <p>
-                                サブドメインを使う場合は先に追加し、対象ドメインの<span
-                                    class="term"
-                                    >Email Routing</span
-                                >でcatch-allを<span class="term"
-                                    >mailias Worker</span
-                                >へ送るように設定します。
+                                If you use a subdomain, add it first. Configure
+                                the catch-all rule for your mail domain to send
+                                messages to your mailias Worker.
                             </p>
                         </div>
                     </li>
                     <li>
                         <span class="number">05</span>
                         <div>
-                            <h3>サービス用のアドレスを作る</h3>
+                            <h3>Create an address for a service</h3>
                             <p>
-                                区別しやすい名前を入力してアドレスを作り、そのアドレスをサービスに登録します。
+                                Enter a recognizable label, generate the
+                                address, and use it to register with the
+                                service.
                             </p>
                         </div>
                     </li>
                 </ol>
-                <p>
-                    <a
-                        class="text-link"
-                        href="https://github.com/kentakom1213/mailias/blob/main/SETUP-ja.md"
-                        >設定値や画面を含む詳しい手順
-                        <span aria-hidden="true">→</span></a
-                    >
-                </p>
+                <a
+                    class="text-link"
+                    href="https://github.com/kentakom1213/mailias/blob/main/SETUP.md"
+                    >Detailed setup guide →</a
+                >
             </section>
-
             <section>
-                <h2>資料</h2>
+                <h2>Documentation</h2>
                 <ul class="document-links">
                     <li>
                         <a
                             href="https://github.com/kentakom1213/mailias/blob/main/docs/security-model.md"
-                            >セキュリティ設計
-                            <span aria-hidden="true">→</span></a
-                        ><span>秘密キーとタグの扱い</span>
+                            >Security model →</a
+                        ><span>Secret keys and address tags</span>
                     </li>
                     <li>
                         <a
                             href="https://github.com/kentakom1213/mailias/blob/main/SPEC.md"
-                            >プロトコル仕様 <span aria-hidden="true">→</span></a
-                        ><span>アドレス形式と検証方法</span>
+                            >Protocol specification →</a
+                        ><span>Address format and verification</span>
                     </li>
                     <li>
                         <a href="https://github.com/kentakom1213/mailias"
-                            >GitHub <span aria-hidden="true">→</span></a
-                        ><span>ソースコードとIssue</span>
+                            >GitHub →</a
+                        ><span>Source code and issues</span>
                     </li>
                 </ul>
             </section>
         </main>
-
         <footer>
-            <span>© mailias 2026</span>
-            <a href="https://github.com/kentakom1213/mailias">GitHub</a>
+            <span>© mailias 2026</span
+            ><a href="./privacy-policy/">Privacy policy</a
+            ><a href="https://github.com/kentakom1213/mailias">GitHub</a>
         </footer>
     </body>
 </html>
