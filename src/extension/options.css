@@ -73,11 +73,11 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .progress-title { font-size: 14px; font-weight: 750; margin-bottom: 10px; }
 .progress-list { list-style: none; margin: 0; padding: 0; }
 .progress-item { display: grid; grid-template-columns: 26px minmax(0, 1fr); grid-template-areas: "marker label" "marker state"; column-gap: 9px; padding: 9px 0; color: color-mix(in srgb, CanvasText 55%, transparent); }
-.progress-marker { grid-area: marker; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 999px; border: 1px solid color-mix(in srgb, CanvasText 22%, transparent); font-size: 12px; font-weight: 700; }
+.progress-marker { grid-area: marker; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 999px; border: 1px solid var(--mailias-orange); font-size: 12px; font-weight: 700; }
 .progress-label { grid-area: label; font-size: 13px; font-weight: 650; line-height: 1.2; }
 .progress-state { grid-area: state; margin-top: 2px; font-size: 11px; }
 .progress-item.done { color: color-mix(in srgb, CanvasText 72%, transparent); }
-.progress-item.done .progress-marker { border-color: #237a3b; background: #237a3b; color: white; }
+.progress-item.done .progress-marker { border-color: var(--mailias-orange); background: var(--mailias-orange); color: white; }
 .progress-item.done .progress-marker { font-size: 0; }
 .progress-item.done .progress-marker::after { content: "✓"; font-size: 13px; }
 .progress-item.active { color: CanvasText; }
@@ -103,7 +103,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .worker-check-list { margin-top: 20px; border-top: 1px solid color-mix(in srgb, CanvasText 10%, transparent); }
 .worker-check-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 10px 0; border-bottom: 1px solid color-mix(in srgb, CanvasText 10%, transparent); }
 .setup-status { font-size: 13px; font-weight: 650; text-align: right; }
-.setup-status.ready { color: #237a3b; }
+.setup-status.ready { color: var(--mailias-orange); }
 .setup-status.missing { color: #b42318; }
 .setup-status.pending { color: color-mix(in srgb, CanvasText 52%, transparent); }
 .final-summary { margin-top: 20px; border-top: 1px solid color-mix(in srgb, CanvasText 10%, transparent); }
@@ -144,12 +144,15 @@ button:disabled { cursor: default; opacity: .5; }
 .deployment-status:empty { display: none; }
 .deployment-status strong { display: block; font-size: 15px; }
 .deployment-status span { display: block; margin-top: 3px; font-size: 13px; color: CanvasText; }
-.deployment-status.ready { color: #237a3b; background: color-mix(in srgb, #237a3b 8%, Canvas); }
+.deployment-status.ready { color: var(--mailias-orange); background: color-mix(in srgb, var(--mailias-orange) 8%, Canvas); }
 .deployment-status.missing { color: #956000; background: color-mix(in srgb, #b77900 8%, Canvas); }
 .deployment-status.pending { color: #2563a6; background: color-mix(in srgb, #2563a6 8%, Canvas); }
 @media (prefers-color-scheme: dark) {
-  .deployment-status.ready, .setup-status.ready { color: #86d99d; }
   .deployment-status.missing { color: #f4c66b; }
   .deployment-status.pending { color: #8abfff; }
   .setup-status.missing { color: #ffaaa2; }
 }
+
+.setup-status::before { content: ""; display: inline-grid; place-items: center; width: 14px; height: 14px; margin-right: 6px; border: 1px solid var(--mailias-orange); border-radius: 3px; vertical-align: -2px; }
+.setup-status.ready::before { content: "✓"; background: var(--mailias-orange); color: white; font-size: 11px; }
+#continue-worker { background: white; color: #222; }

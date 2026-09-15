@@ -24,8 +24,8 @@ const japanese: Record<string, string> = {
   "step1.domainInstruction3": "HTTPS の URL を下に貼り付ける（パス不要）",
   "step1.openWorkers": "Workers &amp; Pages を開く",
   "step1.workerUrl": "Worker URL",
-  "step1.connect": "デプロイ状態を確認",
-  "step1.continue": "この URL で続ける",
+  "step1.connect": "次に進む",
+  "step1.continue": "デプロイを確認せず進む",
 
   "step2.kicker": "ステップ 2 / 7",
   "step2.title": "メールドメインを選択",

@@ -51,12 +51,12 @@ function showMessage(text: string, error = false): void {
 function setSmallStatus(id: string, ready: boolean | null, readyText?: string, missingText?: string): void {
   const node = document.querySelector<HTMLElement>(`#${id}`)!;
   if (ready === null) {
-    node.textContent = localize("○ Not checked", "○ 未確認");
+    node.textContent = localize("Not checked", "未確認");
     node.className = "setup-status pending";
     return;
   }
   node.textContent = ready
-    ? `✅ ${readyText ?? localize("Ready", "準備完了")}`
+    ? `${readyText ?? localize("Ready", "準備完了")}`
     : `❌ ${missingText ?? localize("Missing", "未設定")}`;
   node.className = `setup-status ${ready ? "ready" : "missing"}`;
 }
@@ -285,7 +285,7 @@ const deploymentStatus = document.querySelector<HTMLElement>("#deployment-status
 function showDeploymentStatus(state: "ready" | "missing" | "pending", title: string, hint = ""): void {
   deploymentStatus.className = `deployment-status ${state}`;
   const label = document.createElement("strong");
-  label.textContent = `${state === "ready" ? "✅" : state === "missing" ? "⚠️" : "⏳"} ${title}`;
+  label.textContent = `${state === "ready" ? "✓" : state === "missing" ? "⚠️" : "⏳"} ${title}`;
   deploymentStatus.replaceChildren(label);
   if (hint) {
     const detail = document.createElement("span");
@@ -301,6 +301,7 @@ let checkedOrigin = "";
 workerOriginInput.addEventListener("input", () => {
   checkedOrigin = "";
   continueWorker.disabled = true;
+  continueWorker.classList.add("hidden");
   deploymentStatus.textContent = "";
 });
 
@@ -315,6 +316,7 @@ document.querySelector("#connect-worker")!.addEventListener("click", () => {
   const button = document.querySelector<HTMLButtonElement>("#connect-worker")!;
   button.disabled = true;
   continueWorker.disabled = true;
+  continueWorker.classList.add("hidden");
   checkedOrigin = "";
   requestedStep = 1;
   void (async () => {
@@ -330,23 +332,33 @@ document.querySelector("#connect-worker")!.addEventListener("click", () => {
     if (workerOriginInput.value.trim() !== raw) return;
     workerOriginInput.value = url.origin;
     checkedOrigin = url.origin;
-    continueWorker.disabled = false;
     showMessage("");
+    const allowSkip = () => {
+      continueWorker.disabled = false;
+      continueWorker.classList.remove("hidden");
+    };
     if (!granted) {
+      allowSkip();
       showDeploymentStatus("missing", localize("Permission required", "アクセス権限がありません"), localize("You can continue", "このまま進めます"));
       return;
     }
-    showDeploymentStatus("pending", localize("Checking…", "確認中…"), localize("You can continue", "このまま進めます"));
+    showDeploymentStatus("pending", localize("Checking…", "確認中…"));
     try {
       const result = await sendMessage<HealthResult>({ type: "checkHealth" });
       if (checkedOrigin !== url.origin) return;
       if (result.health.status === "ok") {
-        showDeploymentStatus("ready", localize("Deployment confirmed", "デプロイ確認できました"));
+        showDeploymentStatus("ready", localize("Deployment confirmed", "デプロイを確認できました"));
+        if (currentStatus && renderedStep === 1 && !choosingLanguage) {
+          requestedStep = null;
+          renderWizard(currentStatus);
+        }
       } else {
+        allowSkip();
         showDeploymentStatus("missing", localize("Worker error", "Worker がエラーを返しました"), localize("You can continue", "このまま進めます"));
       }
     } catch {
       if (checkedOrigin !== url.origin) return;
+      allowSkip();
       showDeploymentStatus("missing", localize("Deployment not confirmed", "デプロイ確認できません"), localize("Check the URL · You can continue", "URL を確認してください · このまま進めます"));
     }
   })().catch((error: unknown) => {
@@ -374,7 +386,7 @@ document.querySelector("#generate")!.addEventListener("click", () => {
     setupSecret = generateSecret();
     requestedStep = 4;
     generatedSecret.value = setupSecret;
-    showMessage(localize("Key generated. Save it in your password manager.", "✅ キーを生成しました"));
+    showMessage(localize("Key generated. Save it in your password manager.", "キーを生成しました"));
     if (currentStatus) renderWizard(currentStatus);
   } catch (error) {
     showMessage(error instanceof Error ? error.message : localize("Could not generate a recovery key.", "秘密キーを生成できませんでした．"), true);
@@ -399,8 +411,8 @@ document.querySelector("#saved")!.addEventListener("click", () => {
     requestedStep = 5;
     lastHealth = null;
     showMessage(localize(
-      "✅ Key saved.",
-      "✅ キーを保存しました",
+      "Key saved.",
+      "キーを保存しました",
     ));
     await refresh(false);
   })().catch((error: unknown) =>
