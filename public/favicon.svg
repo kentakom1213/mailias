@@ -1,6 +1,84 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="mailias">
-  <rect x="14" y="26" width="94" height="70" rx="12" fill="#163B67"/>
-  <path d="M17 32 61 65a6 6 0 0 0 7 0l37-31" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="95" cy="91" r="28" fill="#1677F0" stroke="#fff" stroke-width="5"/>
-  <text x="95" y="105" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="44" font-weight="700" fill="#fff">@</text>
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 1200 900"
+    role="img"
+    aria-label="mailias fast mail icon"
+>
+  <defs>
+    <!-- Cloudflare-inspired warm gradient, shared across the whole colored mark -->
+    <linearGradient
+            id="cfGradient"
+            x1="70"
+            y1="680"
+            x2="1060"
+            y2="230"
+            gradientUnits="userSpaceOnUse"
+        >
+      <stop offset="0%" stop-color="#E85D04" />
+      <stop offset="48%" stop-color="#F48120" />
+      <stop offset="100%" stop-color="#FBBF24" />
+    </linearGradient>
+  </defs>
+
+  <!-- white background -->
+  <rect width="1200" height="900" fill="#ffffff" />
+
+  <!-- speed lines -->
+  <rect
+        x="120"
+        y="355"
+        width="245"
+        height="70"
+        rx="35"
+        fill="url(#cfGradient)"
+    />
+  <rect
+        x="70"
+        y="465"
+        width="295"
+        height="70"
+        rx="35"
+        fill="url(#cfGradient)"
+    />
+  <rect
+        x="130"
+        y="575"
+        width="235"
+        height="70"
+        rx="35"
+        fill="url(#cfGradient)"
+    />
+
+  <!-- envelope body -->
+  <rect
+        x="390"
+        y="260"
+        width="670"
+        height="420"
+        rx="55"
+        fill="url(#cfGradient)"
+    />
+
+  <!-- flap uses the same global gradient so the transition feels continuous -->
+  <path
+        d="M390 310
+           L705 565
+           Q725 580 745 565
+           L1060 310
+           L1060 260
+           Q1060 230 1030 230
+           L420 230
+           Q390 230 390 260 Z"
+        fill="url(#cfGradient)"
+    />
+
+  <!-- white flap edge -->
+  <path
+        d="M390 330 L705 585 Q725 600 745 585 L1060 330"
+        fill="none"
+        stroke="#ffffff"
+        stroke-width="40"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    />
 </svg>

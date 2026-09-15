@@ -1,9 +1,9 @@
 {
   "name": "mailias",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "packageManager": "pnpm@10.25.0",
   "engines": {
     "node": ">=22"
@@ -13,7 +13,7 @@
     "build:extension": "vite build && node scripts/package-extensions.mjs",
     "build:worker": "wrangler deploy --dry-run --outdir dist/worker",
     "package:extensions": "pnpm build:extension && node scripts/package-release.mjs",
-    "release:firefox": "pnpm build:extension && web-ext sign --source-dir dist/firefox --artifacts-dir dist/firefox-release --channel listed --no-input",
+    "release:firefox": "pnpm build:extension && web-ext sign --source-dir dist/firefox --artifacts-dir dist/firefox-release --channel listed --amo-metadata amo-metadata.json --no-input",
     "check": "pnpm types:worker && tsc --noEmit && vitest run",
     "dev:extension": "vite build --watch",
     "dev:worker": "wrangler dev",

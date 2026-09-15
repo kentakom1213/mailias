@@ -1,0 +1,11 @@
+{
+  "summary": {
+    "en-US": "Generate deterministic, verifiable email aliases locally."
+  },
+  "categories": [
+    "privacy-security"
+  ],
+  "version": {
+    "license": "MIT"
+  }
+}
