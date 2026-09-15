@@ -139,3 +139,17 @@ button:disabled { cursor: default; opacity: .5; }
 
 .page-title { display: flex; align-items: center; gap: 8px; }
 .page-title img { flex-shrink: 0; }
+
+.deployment-status { margin: 16px 0 0; padding: 12px 14px; border: 1px solid currentColor; border-radius: 8px; line-height: 1.5; }
+.deployment-status:empty { display: none; }
+.deployment-status strong { display: block; font-size: 15px; }
+.deployment-status span { display: block; margin-top: 3px; font-size: 13px; color: CanvasText; }
+.deployment-status.ready { color: #237a3b; background: color-mix(in srgb, #237a3b 8%, Canvas); }
+.deployment-status.missing { color: #956000; background: color-mix(in srgb, #b77900 8%, Canvas); }
+.deployment-status.pending { color: #2563a6; background: color-mix(in srgb, #2563a6 8%, Canvas); }
+@media (prefers-color-scheme: dark) {
+  .deployment-status.ready, .setup-status.ready { color: #86d99d; }
+  .deployment-status.missing { color: #f4c66b; }
+  .deployment-status.pending { color: #8abfff; }
+  .setup-status.missing { color: #ffaaa2; }
+}

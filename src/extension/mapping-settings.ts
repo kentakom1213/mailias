@@ -30,10 +30,7 @@ async function addressFor(label: string): Promise<string> {
 
 function addMappingSection(): HTMLElement {
   const node = section(t("Add site / label", "サイト / ラベルを追加"));
-  append(node, el("p", "setting-help", t(
-    "Register a label from Settings without opening the popup. Labels are saved only in the extension; the generated email address remains deterministic.",
-    "ポップアップを開かずに，設定画面からサイトとラベルの対応を登録できます．保存されるのは拡張機能内の対応だけで，メールアドレス自体は決定的に生成されます．",
-  )));
+
 
   const siteLabel = el("label", "field-label", t("Site domain", "サイトのドメイン"));
   const siteInput = el("input", "text-input") as HTMLInputElement;
@@ -185,7 +182,7 @@ function dataSection(state: ExtensionState): HTMLElement {
   append(node, el(
     "p",
     "setting-help",
-    t("Export and import site/label mappings. The master key is never included.", "サイト / ラベル対応をエクスポート・インポートできます．マスターキーは含まれません．"),
+    t("Export / import labels. Secret key excluded.", "ラベルの書き出し・読み込み．秘密キーは含みません．"),
   ));
   const actions = el("div", "data-actions");
   const exportButton = button(t("Export mappings", "対応をエクスポート"), "button secondary");

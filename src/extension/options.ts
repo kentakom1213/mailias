@@ -51,13 +51,13 @@ function showMessage(text: string, error = false): void {
 function setSmallStatus(id: string, ready: boolean | null, readyText?: string, missingText?: string): void {
   const node = document.querySelector<HTMLElement>(`#${id}`)!;
   if (ready === null) {
-    node.textContent = localize("Not checked", "未確認");
+    node.textContent = localize("○ Not checked", "○ 未確認");
     node.className = "setup-status pending";
     return;
   }
   node.textContent = ready
-    ? (readyText ?? localize("Ready", "準備完了"))
-    : (missingText ?? localize("Missing", "未設定"));
+    ? `✅ ${readyText ?? localize("Ready", "準備完了")}`
+    : `❌ ${missingText ?? localize("Missing", "未設定")}`;
   node.className = `setup-status ${ready ? "ready" : "missing"}`;
 }
 
@@ -159,6 +159,7 @@ async function checkWorkerConfiguration(showResult: boolean): Promise<void> {
   } catch (error) {
     lastHealth = null;
     renderWorkerChecks();
+    setSmallStatus("worker-check-reachable", false, undefined, localize("Connection failed", "接続失敗"));
     if (showResult) {
       showMessage(error instanceof Error ? error.message : localize("Worker health check failed.", "Worker の確認に失敗しました．"), true);
     }
@@ -228,19 +229,19 @@ function workerProblem(result: HealthResult): string {
   if (result.health.configured?.secret !== true) {
     return localize(
       "MAILIAS_SECRET is not configured yet. Add it in Worker Settings → Variables and Secrets.",
-      "MAILIAS_SECRET がまだ設定されていません．Worker の Settings → Variables and Secrets から追加してください．",
+      "❌ MAILIAS_SECRET が未設定です",
     );
   }
   if (result.health.configured?.myAddress !== true) {
     return localize(
       "MY_ADDRESS is not configured yet. Add your own destination inbox address in Worker Settings → Variables and Secrets.",
-      "MY_ADDRESS がまだ設定されていません．Worker の Settings → Variables and Secrets から自分の転送先メールアドレスを追加してください．",
+      "❌ MY_ADDRESS が未設定です",
     );
   }
   if (!result.matches) {
     return localize(
       "The Worker recovery key does not match this extension. Retrieve the saved key from your password manager and update MAILIAS_SECRET.",
-      "Worker のリカバリーキーがこの拡張機能と一致しません．パスワードマネージャーから保存済みのキーを取り出し，MAILIAS_SECRET を更新してください．",
+      "❌ キーが不一致です．保存したキーで MAILIAS_SECRET を更新してください．",
     );
   }
   return localize("The Worker configuration is not ready yet.", "Worker の設定がまだ完了していません．");
@@ -281,6 +282,18 @@ for (const language of ["en", "ja"] as const) {
 }
 
 const deploymentStatus = document.querySelector<HTMLElement>("#deployment-status")!;
+function showDeploymentStatus(state: "ready" | "missing" | "pending", title: string, hint = ""): void {
+  deploymentStatus.className = `deployment-status ${state}`;
+  const label = document.createElement("strong");
+  label.textContent = `${state === "ready" ? "✅" : state === "missing" ? "⚠️" : "⏳"} ${title}`;
+  deploymentStatus.replaceChildren(label);
+  if (hint) {
+    const detail = document.createElement("span");
+    detail.textContent = hint;
+    deploymentStatus.appendChild(detail);
+  }
+}
+
 const workerOriginInput = document.querySelector<HTMLInputElement>("#worker-origin")!;
 const continueWorker = document.querySelector<HTMLButtonElement>("#continue-worker")!;
 let checkedOrigin = "";
@@ -320,21 +333,21 @@ document.querySelector("#connect-worker")!.addEventListener("click", () => {
     continueWorker.disabled = false;
     showMessage("");
     if (!granted) {
-      deploymentStatus.textContent = localize(
-        "Access was not granted, so deployment could not be checked. You can continue and check it later.",
-        "アクセス権限がないためデプロイ状態を確認できませんでした．このまま進み，後で確認できます．");
+      showDeploymentStatus("missing", localize("Permission required", "アクセス権限がありません"), localize("You can continue", "このまま進めます"));
       return;
     }
-    deploymentStatus.textContent = localize("Checking deployment… You can continue while this runs.", "デプロイ状態を確認中です．待たずに先へ進むこともできます．");
+    showDeploymentStatus("pending", localize("Checking…", "確認中…"), localize("You can continue", "このまま進めます"));
     try {
       const result = await sendMessage<HealthResult>({ type: "checkHealth" });
       if (checkedOrigin !== url.origin) return;
-      deploymentStatus.textContent = result.health.status === "ok"
-        ? localize("mailias Worker is deployed and responding. Secret and email settings will be checked in step 5.", "mailias Worker のデプロイと応答を確認できました．秘密キーとメールの設定はステップ 5 で確認します．")
-        : localize("The Worker responded, but reported an error. You can continue and check it later.", "Worker は応答しましたが，エラーを返しています．このまま進み，後で確認できます．");
+      if (result.health.status === "ok") {
+        showDeploymentStatus("ready", localize("Deployment confirmed", "デプロイ確認できました"));
+      } else {
+        showDeploymentStatus("missing", localize("Worker error", "Worker がエラーを返しました"), localize("You can continue", "このまま進めます"));
+      }
     } catch {
       if (checkedOrigin !== url.origin) return;
-      deploymentStatus.textContent = localize("Deployment could not be confirmed. Check the URL and deployment status. You can continue and retry later.", "デプロイを確認できませんでした．URL とデプロイ状態を確認してください．このまま進み，後で再確認できます．");
+      showDeploymentStatus("missing", localize("Deployment not confirmed", "デプロイ確認できません"), localize("Check the URL · You can continue", "URL を確認してください · このまま進めます"));
     }
   })().catch((error: unknown) => {
     deploymentStatus.textContent = "";
@@ -361,24 +374,24 @@ document.querySelector("#generate")!.addEventListener("click", () => {
     setupSecret = generateSecret();
     requestedStep = 4;
     generatedSecret.value = setupSecret;
-    showMessage(localize("Recovery key generated. Save it before continuing.", "リカバリーキーを生成しました．続行する前に保存してください．"));
+    showMessage(localize("Key generated. Save it in your password manager.", "✅ キーを生成しました"));
     if (currentStatus) renderWizard(currentStatus);
   } catch (error) {
-    showMessage(error instanceof Error ? error.message : localize("Could not generate a recovery key.", "リカバリーキーを生成できませんでした．"), true);
+    showMessage(error instanceof Error ? error.message : localize("Could not generate a recovery key.", "秘密キーを生成できませんでした．"), true);
   }
 });
 
 document.querySelector("#copy-secret")!.addEventListener("click", () => {
   if (!setupSecret) return;
   void navigator.clipboard.writeText(setupSecret).then(
-    () => showMessage(localize("Recovery key copied. Save it in your password manager.", "リカバリーキーをコピーしました．パスワードマネージャーに保存してください．")),
-    () => showMessage(localize("Could not copy the recovery key.", "リカバリーキーをコピーできませんでした．"), true),
+    () => showMessage(localize("Recovery key copied. Save it in your password manager.", "秘密キーをコピーしました．パスワードマネージャーに保存してください．")),
+    () => showMessage(localize("Could not copy the recovery key.", "秘密キーをコピーできませんでした．"), true),
   );
 });
 
 document.querySelector("#saved")!.addEventListener("click", () => {
   void (async () => {
-    if (!setupSecret) throw new Error(localize("Generate a recovery key first.", "先にリカバリーキーを生成してください．"));
+    if (!setupSecret) throw new Error(localize("Generate a recovery key first.", "先に秘密キーを生成してください．"));
     const secret = setupSecret;
     await importRecoveryKey(secret, true);
     setupSecret = "";
@@ -386,29 +399,29 @@ document.querySelector("#saved")!.addEventListener("click", () => {
     requestedStep = 5;
     lastHealth = null;
     showMessage(localize(
-      "Recovery key saved locally. Retrieve the password-manager copy in the next step and configure the Worker.",
-      "リカバリーキーをローカルに保存しました．次のステップでパスワードマネージャーから取り出し，Worker に設定してください．",
+      "✅ Key saved.",
+      "✅ キーを保存しました",
     ));
     await refresh(false);
   })().catch((error: unknown) =>
-    showMessage(error instanceof Error ? error.message : localize("Could not save the recovery key.", "リカバリーキーを保存できませんでした．"), true));
+    showMessage(error instanceof Error ? error.message : localize("Could not save the recovery key.", "秘密キーを保存できませんでした．"), true));
 });
 
 document.querySelector("#restore")!.addEventListener("click", () => {
   void (async () => {
     const input = document.querySelector<HTMLInputElement>("#existing-secret")!;
     const secret = input.value.trim();
-    if (!secret) throw new Error(localize("Paste the recovery key from your password manager.", "パスワードマネージャーからリカバリーキーを貼り付けてください．"));
+    if (!secret) throw new Error(localize("Paste the recovery key from your password manager.", "パスワードマネージャーから秘密キーを貼り付けてください．"));
     await importRecoveryKey(secret, true);
     input.value = "";
     setupSecret = "";
     generatedSecret.value = "";
     requestedStep = 5;
     lastHealth = null;
-    showMessage(localize("Existing recovery key restored.", "既存のリカバリーキーを復元しました．"));
+    showMessage(localize("Existing recovery key restored.", "既存の秘密キーを復元しました．"));
     await refresh(false);
   })().catch((error: unknown) =>
-    showMessage(error instanceof Error ? error.message : localize("Could not restore the recovery key.", "リカバリーキーを復元できませんでした．"), true));
+    showMessage(error instanceof Error ? error.message : localize("Could not restore the recovery key.", "秘密キーを復元できませんでした．"), true));
 });
 
 document.querySelector("#check-worker")!.addEventListener("click", () => {
@@ -438,7 +451,7 @@ document.querySelector("#finish-setup")!.addEventListener("click", () => {
 document.querySelector("#reset")!.addEventListener("click", () => {
   const prompt = localize(
     "Delete the local key，Worker URL，setup state，and saved site/label mappings? Make sure the recovery key is available in your password manager.",
-    "ローカルキー，Worker URL，セットアップ状態，保存済みのサイト / ラベル対応を削除しますか？ パスワードマネージャーにリカバリーキーが保存されていることを確認してください．",
+    "ローカルキー，Worker URL，セットアップ状態，保存済みのサイト / ラベル対応を削除しますか？ パスワードマネージャーに秘密キーが保存されていることを確認してください．",
   );
   if (!confirm(prompt)) return;
   void sendMessage({ type: "reset" }).then(async () => {
