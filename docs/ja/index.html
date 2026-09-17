@@ -16,15 +16,15 @@
         <a class="skip-link" href="#main">本文へ移動</a>
 
         <header class="site-header">
-            <a class="site-name" href="#top"
-                ><img src="../icon.png" width="32" height="32" alt="" />
-                mailias</a
-            >
+            <a class="site-name" href="#top">
+                <img src="../icon.png" width="32" height="32" alt="" />
+                mailias
+            </a>
             <nav aria-label="メインナビゲーション">
                 <a href="../" lang="en" hreflang="en">English</a>
-                <a href="https://github.com/kentakom1213/mailias"
-                    >GitHub <span aria-hidden="true">↗</span></a
-                >
+                <a href="https://github.com/kentakom1213/mailias">
+                    GitHub <span aria-hidden="true">↗</span>
+                </a>
             </nav>
         </header>
 
@@ -32,7 +32,7 @@
             <section class="intro" id="top">
                 <h1>サービスごとに，違うアドレスを．</h1>
                 <p class="summary">
-                    自分のドメインで，サービスごとにメールアドレスを作れます．<span
+                    自分のドメインで，サービスごとにメールアドレスを作れます．<br /><span
                         class="term"
                         >Cloudflare Worker</span
                     >が宛先アドレスを検証し，いつもの受信箱へ転送します．
@@ -40,14 +40,14 @@
 
                 <div
                     class="alias-example"
-                    aria-label="mailiasで作るメールアドレスの例"
+                    aria-label="mailias で作るメールアドレスの例"
                 >
                     <span class="alias-input"><small>名前</small>github</span>
                     <span class="alias-arrow" aria-hidden="true">→</span>
-                    <span class="alias-output"
-                        ><small>生成されるアドレスの例</small
-                        ><code>github-v1-vtabvg6w@m.example.com</code></span
-                    >
+                    <span class="alias-output">
+                        <small>生成されるアドレスの例</small>
+                        <code>github-v1-vtabvg6w@m.example.com</code>
+                    </span>
                 </div>
             </section>
 
@@ -58,18 +58,21 @@
                         <span class="number">01</span>
                         <div>
                             <h3>サービスごとのアドレスを作る</h3>
-                            <p>アドレスはブラウザの中だけで生成します．</p>
+                            <p>
+                                拡張機能で，サイトごとのメールアドレスを生成します．
+                            </p>
                         </div>
                     </li>
                     <li>
                         <span class="number">02</span>
                         <div>
                             <h3>
-                                <span class="term">Cloudflare Worker</span
-                                >でタグを検証する
+                                <span class="term">Cloudflare Worker</span>
+                                でアドレスを検証する
                             </h3>
                             <p>
-                                メールが届くと，Workerが宛先アドレスのタグを検証します．
+                                メールが届くと，Worker
+                                がアドレスに含まれる認証タグを検証します．
                             </p>
                         </div>
                     </li>
@@ -78,18 +81,16 @@
                         <div>
                             <h3>受信箱へ転送する</h3>
                             <p>
-                                タグが正しければ，メールを設定した転送先へ送ります．
+                                アドレスが正しければ，メールを設定した転送先へ送ります．
                             </p>
                         </div>
                     </li>
                 </ol>
+
                 <ul class="flow-notes" role="list">
+                    <li>自分のドメインと Cloudflare だけで運用できます．</li>
                     <li>
-                        自分のドメインで運用でき，外部のメールエイリアスサービスに依存しません．
-                    </li>
-                    <li>
-                        Worker
-                        はエイリアスのデータベースを持たず，サイトとラベルの対応は拡張機能内で管理します．
+                        発行したアドレスの一覧をサーバー側に保存する必要はありません．
                     </li>
                 </ul>
             </section>
@@ -97,42 +98,49 @@
             <section id="setup">
                 <h2>使い始める</h2>
                 <p class="setup-intro">
-                    Cloudflareで管理しているドメインと，転送先のメールアドレスが必要です．
+                    Cloudflare
+                    で管理しているドメインと，転送先のメールアドレスが必要です．
                 </p>
+
                 <ol class="setup-steps">
                     <li>
                         <span class="number">01</span>
                         <div>
                             <h3>拡張機能をインストールする</h3>
                             <p>
-                                ChromeまたはFirefoxにmailiasをインストールし，設定画面を開きます．
+                                Chrome または Firefox に mailias
+                                をインストールし，設定画面を開きます．
                             </p>
                             <div class="inline-actions">
                                 <a
                                     href="https://chromewebstore.google.com/detail/ndncanfdleghajopjmfjaidjabfahdbb/"
-                                    >Chrome版を入手</a
-                                ><a
+                                    >Chrome 版を入手</a
+                                >
+                                <a
                                     href="https://addons.mozilla.org/ja/firefox/addon/04062be44a464eccb4d9/"
-                                    >Firefox版を入手</a
+                                    >Firefox 版を入手</a
                                 >
                             </div>
                         </div>
                     </li>
+
                     <li>
                         <span class="number">02</span>
                         <div>
                             <h3>秘密キーを作って保管する</h3>
                             <p>
-                                拡張機能で秘密キーを作り，パスワードマネージャーなどに保存します．秘密キーを失うと，これまでと同じメールアドレスを再生成できません．
+                                拡張機能で秘密キーを作り，パスワードマネージャーなどに保存します．秘密キーは必ず保管してください．失うと，同じアドレスを生成できなくなります．
                             </p>
                         </div>
                     </li>
+
                     <li>
                         <span class="number">03</span>
                         <div>
-                            <h3>Workerをデプロイして設定する</h3>
+                            <h3>Worker をデプロイして設定する</h3>
                             <p>
-                                Workerをデプロイし，<code>MAILIAS_SECRET</code>には秘密キーを<strong>Secret</strong>として設定します．<code>MY_ADDRESS</code>には実際に受け取りたい自分のメールアドレスを通常の<strong>Variable</strong>として設定します．
+                                Worker
+                                をデプロイし，秘密キーと転送先のメールアドレスを設定します．
                             </p>
                             <div class="inline-actions">
                                 <a
@@ -143,23 +151,24 @@
                             </div>
                         </div>
                     </li>
+
                     <li>
                         <span class="number">04</span>
                         <div>
                             <h3>
-                                <span class="term">Email Routing</span
-                                >を設定する
+                                <span class="term">Email Routing</span>
+                                を設定する
                             </h3>
                             <p>
-                                サブドメインを使う場合は先に追加し，対象ドメインの<span
-                                    class="term"
-                                    >Email Routing</span
-                                >でcatch-allを<span class="term"
-                                    >mailias Worker</span
-                                >へ送るように設定します．
+                                対象ドメインの
+                                <span class="term">Email Routing</span>
+                                で，catch-all を
+                                <span class="term">mailias Worker</span>
+                                に接続します．
                             </p>
                         </div>
                     </li>
+
                     <li>
                         <span class="number">05</span>
                         <div>
@@ -170,6 +179,7 @@
                         </div>
                     </li>
                 </ol>
+
                 <p>
                     <a
                         class="text-link"
@@ -188,26 +198,29 @@
                             href="https://github.com/kentakom1213/mailias/blob/main/docs/security-model.md"
                             >セキュリティ設計
                             <span aria-hidden="true">→</span></a
-                        ><span>秘密キーとタグの扱い</span>
+                        >
+                        <span>秘密キーとタグの扱い</span>
                     </li>
                     <li>
                         <a
                             href="https://github.com/kentakom1213/mailias/blob/main/SPEC.md"
                             >プロトコル仕様 <span aria-hidden="true">→</span></a
-                        ><span>アドレス形式と検証方法</span>
+                        >
+                        <span>アドレス形式と検証方法</span>
                     </li>
                     <li>
                         <a href="https://github.com/kentakom1213/mailias"
                             >GitHub <span aria-hidden="true">→</span></a
-                        ><span>ソースコードとIssue</span>
+                        >
+                        <span>ソースコードと Issue</span>
                     </li>
                 </ul>
             </section>
         </main>
 
         <footer>
-            <span>© mailias 2026</span
-            ><a href="../privacy-policy/ja/">プライバシーポリシー</a>
+            <span>© mailias 2026</span>
+            <a href="../privacy-policy/ja/">プライバシーポリシー</a>
             <a href="https://github.com/kentakom1213/mailias">GitHub</a>
         </footer>
     </body>

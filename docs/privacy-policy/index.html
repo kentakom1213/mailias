@@ -11,168 +11,155 @@
     </head>
     <body>
         <a class="skip-link" href="#main">Skip to content</a>
+
         <header class="site-header">
-            <a class="site-name" href="../"
-                ><img src="../icon.png" width="32" height="32" alt="" />
-                mailias</a
-            >
+            <a class="site-name" href="../">
+                <img src="../icon.png" width="32" height="32" alt="" />
+                mailias
+            </a>
             <nav aria-label="Navigation">
-                <a href="./ja/" lang="ja" hreflang="ja">日本語</a
-                ><a href="https://github.com/kentakom1213/mailias">GitHub ↗</a>
+                <a href="./ja/" lang="ja" hreflang="ja">日本語</a>
+                <a href="https://github.com/kentakom1213/mailias">GitHub ↗</a>
             </nav>
         </header>
+
         <main id="main">
             <article class="policy">
                 <section class="intro">
                     <h1>Privacy policy</h1>
-                    <p class="summary">Last updated: September 15, 2026</p>
+                    <p class="summary">Last updated: September 17, 2026</p>
                 </section>
+
                 <section>
                     <h2>Scope</h2>
                     <p>
-                        This policy covers the mailias browser extension and
-                        project website, and explains the default mailias Worker
-                        that you deploy in your own Cloudflare account. mailias
-                        is a self-hosted, open-source email alias tool. The
-                        project maintainer does not operate a central alias or
-                        email service for extension users.
+                        This policy describes how data is handled by the mailias
+                        browser extension, project website, and the default
+                        Worker that you deploy in your own Cloudflare account.
+                        The mailias maintainer does not operate a central
+                        service that manages users' aliases or email.
                     </p>
                 </section>
+
                 <section>
-                    <h2>Data used on your device</h2>
-                    <ul>
-                        <li>
-                            The extension stores your mail domain, Worker URL,
-                            key identifier, language, and setup status in
-                            browser local storage.
-                        </li>
-                        <li>
-                            Your secret key is imported as a non-extractable
-                            cryptographic key and stored in the extension’s
-                            IndexedDB database. The extension uses it locally to
-                            generate aliases and check the key identifier.
-                        </li>
-                        <li>
-                            When you open the popup, the extension reads the
-                            active tab’s URL to identify its site domain,
-                            suggest a label, and display saved aliases. It
-                            stores site domains, labels, record identifiers,
-                            creation times, and last-used times locally. It does
-                            not store the full tab URL or collect your browsing
-                            history in the background.
-                        </li>
-                        <li>
-                            Copy actions write the selected alias or secret key
-                            to your clipboard. Mapping import and export read or
-                            create a file that contains mail-domain and
-                            site-label records and timestamps; these exports do
-                            not contain your secret key.
-                        </li>
-                    </ul>
+                    <h2>Data stored on your device</h2>
                     <p>
-                        This data supports alias generation, setup, and local
-                        alias management. The extension does not use browser
-                        sync to upload it.
+                        The extension stores configuration such as your mail
+                        domain and Worker URL, your secret key, and mappings
+                        between sites and aliases on your device.
+                    </p>
+                    <p>
+                        When you open the popup, the extension uses the active
+                        tab's URL to determine the site's domain and show the
+                        corresponding alias. It does not store the full tab URL.
+                    </p>
+                    <p>
+                        Your secret key is used locally to generate aliases and
+                        verify configuration. It is not sent to the Worker or
+                        the project maintainer.
+                    </p>
+                    <p>
+                        Exported mapping files do not contain your secret key.
                     </p>
                 </section>
+
                 <section>
-                    <h2>Network requests and email processing</h2>
+                    <h2>Communication with the Worker</h2>
                     <p>
-                        With your permission, the extension sends HTTPS requests
-                        to the Worker URL you configure to check availability
-                        and configuration. A check includes your configured mail
-                        domain when available. The Worker returns configuration
-                        flags and a derived key identifier for comparison. The
-                        extension does not send your secret key, saved
-                        site-label mappings, or active tab URL in these
-                        requests. As with other network requests, the receiving
-                        infrastructure can receive your IP address and request
-                        metadata.
+                        The extension connects to the Worker you configure to
+                        check its availability and configuration. These requests
+                        may include your configured mail domain when needed.
+                        They do not include your secret key or the active tab
+                        URL.
                     </p>
                     <p>
-                        You separately enter your secret key and destination
-                        email address into your own Cloudflare configuration.
-                        Cloudflare Email Routing and your Worker process
-                        incoming email and recipient addresses to verify aliases
-                        and forward valid messages to that destination. The
-                        extension itself does not read your inbox or email
-                        contents. The default Worker has no persistent alias or
-                        message database. It logs processing events and errors;
-                        Cloudflare infrastructure and logging settings may
-                        retain request or error information.
+                        As with ordinary network requests, Cloudflare may
+                        process your IP address and request metadata when these
+                        connections are made.
                     </p>
                 </section>
+
                 <section>
-                    <h2>Sharing and limited use</h2>
+                    <h2>Email processing</h2>
                     <p>
-                        The extension contains no advertising, analytics, or
-                        tracking SDKs and sends no usage telemetry to the
-                        project maintainer. We do not sell user data, use it for
-                        advertising, or transfer it for creditworthiness or
-                        lending decisions. Use of data is limited to providing
-                        the user-facing alias and setup features described here,
-                        in accordance with the Chrome Web Store User Data
-                        Policy, including its Limited Use requirements.
+                        You configure the secret key and forwarding address in
+                        your own Cloudflare environment. Cloudflare Email
+                        Routing and the Worker process incoming mail and forward
+                        messages sent to valid aliases to that address.
                     </p>
                     <p>
-                        Cloudflare processes data for the Worker and email
-                        routing you configure. Your destination email provider
-                        processes forwarded mail. Those providers’ terms and
-                        privacy policies apply to their services. The maintainer
-                        has no access to your self-hosted configuration or mail
-                        through the extension.
+                        The extension itself does not read your inbox or email
+                        contents. The default Worker does not maintain a
+                        database of issued aliases. Logs and other data stored
+                        by Cloudflare are subject to your configuration and
+                        Cloudflare's policies.
                     </p>
                 </section>
+
                 <section>
-                    <h2>Retention and deletion</h2>
+                    <h2>Third-party services</h2>
                     <p>
-                        Local settings and the cryptographic key remain until
-                        you reset mailias or remove its extension data. You can
-                        delete individual site-label records in settings.
-                        Resetting mailias deletes its local settings, records,
-                        and key. Removing a label does not invalidate that
-                        address at the Worker.
+                        The extension does not send data to the project
+                        maintainer for advertising, usage analytics, or
+                        tracking.
                     </p>
                     <p>
-                        Resetting the extension does not delete your Cloudflare
-                        Worker, variables, secrets, provider logs, forwarded
-                        emails, exported files, clipboard contents, or
-                        password-manager backups. Manage or delete these
-                        separately through the relevant service or device.
-                        Provider retention depends on their policies and your
-                        configuration.
+                        Cloudflare is used for the Worker and email routing, and
+                        forwarded mail is processed by the email provider you
+                        choose. Those services are subject to their own terms
+                        and privacy policies.
                     </p>
                 </section>
+
                 <section>
-                    <h2>Website and voluntary contact</h2>
+                    <h2>Deleting your data</h2>
                     <p>
-                        The project website has no analytics scripts, tracking
-                        pixels, or application cookies. Its hosting provider may
-                        process IP addresses and request metadata when serving
-                        pages. If you contact the maintainer or submit a GitHub
-                        issue, the information you choose to provide is used to
-                        respond and maintain the project. GitHub issues are
-                        public; do not include secret keys or private email
-                        contents.
+                        You can delete local settings, alias mappings, and your
+                        secret key by resetting mailias or removing the
+                        extension's data from your browser. Individual mappings
+                        can also be removed in settings.
+                    </p>
+                    <p>
+                        Deleting data from the extension does not remove data
+                        stored by Cloudflare or your destination email provider.
+                        Manage that data through the relevant service according
+                        to its settings and policies.
                     </p>
                 </section>
+
                 <section>
-                    <h2>Changes and contact</h2>
+                    <h2>Website</h2>
                     <p>
-                        This page will be updated when data handling changes,
-                        with the revision date shown above. For privacy
-                        questions, contact the maintainer through the
-                        <a href="https://github.com/kentakom1213/mailias/issues"
-                            >mailias issue tracker</a
-                        >.
+                        The project website does not use analytics or tracking.
+                        Its hosting provider may process IP addresses and
+                        request metadata when serving pages.
                     </p>
-                <p>Email: <a href="mailto:contact@pwll.dev">contact@pwll.dev</a></p>
+                </section>
+
+                <section>
+                    <h2>Contact</h2>
+                    <p>
+                        For privacy questions, contact the maintainer through
+                        the
+                        <a
+                            href="https://github.com/kentakom1213/mailias/issues"
+                        >
+                            mailias issue tracker
+                        </a>
+                        or by email.
+                    </p>
+                    <p>
+                        Email:
+                        <a href="mailto:contact@pwll.dev">contact@pwll.dev</a>
+                    </p>
                 </section>
             </article>
         </main>
+
         <footer>
-            <span>© mailias 2026</span><a href="./">Privacy policy</a
-            ><a href="https://github.com/kentakom1213/mailias">GitHub</a>
+            <span>© mailias 2026</span>
+            <a href="./">Privacy policy</a>
+            <a href="https://github.com/kentakom1213/mailias">GitHub</a>
         </footer>
     </body>
 </html>
