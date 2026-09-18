@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="mailias lets you create a different email address for every service on your own domain. A Cloudflare Worker verifies each address and forwards valid messages to your inbox."
+      content="mailias lets you create a different email address for every service on your own domain."
     />
     <meta name="theme-color" content="#ffffff" />
 
@@ -36,7 +36,10 @@
       <section class="intro" id="top">
         <h1>A different address for every service.</h1>
 
-        <p class="summary">Create email addresses on your own domain.</p>
+        <p class="summary">
+          A self-hosted email alias service running on Cloudflare.<br />
+          Create email addresses on your own domain.
+        </p>
 
         <div
           class="alias-example"
@@ -51,7 +54,7 @@
 
           <span class="alias-output">
             <small>Example address</small>
-            <code>github-v1-vtabvg6w@m.example.com</code>
+            <code>github-v1-3fu6wja2@m.example.com</code>
           </span>
         </div>
 
@@ -76,11 +79,6 @@
 
       <section id="usage">
         <h2>Using mailias</h2>
-
-        <p class="section-intro">
-          After setup, you do not need to open Cloudflare every time you create
-          an address.
-        </p>
 
         <div class="extension-demo">
           <div class="extension-demo-header">
@@ -119,11 +117,7 @@
               hidden
             ></p>
 
-            <div
-              class="extension-demo-result"
-              id="alias-demo-result"
-              aria-live="polite"
-            >
+            <div class="extension-demo-result" aria-live="polite">
               <small>Generated address</small>
               <code id="alias-demo-address"></code>
               <small>This is a demo address.</small>
@@ -142,18 +136,16 @@
         <ol class="flow">
           <li>
             <span class="number">01</span>
-
             <div>
               <h3>Create an address in the extension</h3>
               <p>
-                <code> github-v1-vtabvg6w@m.example.com </code>
+                <code> github-v1-3fu6wja2@m.example.com </code>
               </p>
             </div>
           </li>
 
           <li>
             <span class="number">02</span>
-
             <div>
               <h3>The Cloudflare Worker verifies the address</h3>
             </div>
@@ -161,7 +153,6 @@
 
           <li>
             <span class="number">03</span>
-
             <div>
               <h3>Valid mail is forwarded to your usual inbox</h3>
             </div>
@@ -173,10 +164,9 @@
 
           <p>
             Each address contains a short authentication tag derived from your
-            secret key. The Worker verifies this tag when mail arrives.
+            secret key. The Worker verifies the tag, so there is no alias
+            database or server for you to maintain.
           </p>
-
-          <p>There is no alias database or server for you to maintain.</p>
         </div>
       </section>
 
@@ -216,10 +206,7 @@
             <div>
               <h3>Configure the Cloudflare Worker</h3>
 
-              <p>
-                Set the secret key created by the extension and the email
-                address where mail should be forwarded.
-              </p>
+              <p>Set the secret key and forwarding address.</p>
 
               <div class="inline-actions">
                 <a
@@ -268,7 +255,6 @@
               Security model
               <span aria-hidden="true">→</span>
             </a>
-
             <span>Secret keys and authentication tags</span>
           </li>
 
@@ -277,7 +263,6 @@
               Protocol specification
               <span aria-hidden="true">→</span>
             </a>
-
             <span>Address format and verification</span>
           </li>
 
@@ -286,7 +271,6 @@
               GitHub
               <span aria-hidden="true">→</span>
             </a>
-
             <span>Source code and issues</span>
           </li>
         </ul>
@@ -295,8 +279,8 @@
 
     <footer>
       <span>© mailias 2026</span>
-      <a href="./privacy-policy/"> Privacy policy </a>
-      <a href="https://github.com/kentakom1213/mailias"> GitHub </a>
+      <a href="./privacy-policy/">Privacy policy</a>
+      <a href="https://github.com/kentakom1213/mailias">GitHub</a>
     </footer>
 
     <script>
@@ -308,10 +292,7 @@
 
         const domain = "m.example.com";
 
-        /*
-         * Public demo key.
-         * It is unrelated to any real mailias secret key.
-         */
+        // Public demo key.
         const demoSecret = new Uint8Array([
           0x6d, 0x61, 0x69, 0x6c, 0x69, 0x61, 0x73, 0x2d, 0x64, 0x65, 0x6d,
           0x6f, 0x2d, 0x6b, 0x65, 0x79, 0x2d, 0x66, 0x6f, 0x72, 0x2d, 0x77,
@@ -376,9 +357,7 @@
             await crypto.subtle.sign("HMAC", key, message),
           );
 
-          const tag = encodeTag(signature);
-
-          return `${label}-v1-${tag}@${domain}`;
+          return `${label}-v1-${encodeTag(signature)}@${domain}`;
         }
 
         async function updateDemo() {
@@ -387,16 +366,13 @@
 
           try {
             const label = normalizeLabel(input.value);
-
             output.textContent = await generateAlias(label);
           } catch (e) {
             output.textContent = "";
-
             error.textContent =
               e instanceof Error
                 ? e.message
                 : "Could not generate the address.";
-
             error.hidden = false;
           }
         }

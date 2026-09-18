@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="mailias は、自分のドメインでサービスごとのメールアドレスを作れるブラウザ拡張です。Cloudflare Worker がアドレスを検証し、いつもの受信箱へ転送します。"
+      content="mailias は、自分のドメインでサービスごとのメールアドレスを作れるブラウザ拡張です。"
     />
     <meta name="theme-color" content="#ffffff" />
 
@@ -36,7 +36,10 @@
       <section class="intro" id="top">
         <h1>サービスごとに、違うアドレスを。</h1>
 
-        <p class="summary">自分のドメインでメールアドレスを作れます。</p>
+        <p class="summary">
+          Cloudflare で動かすセルフホスト型のメールエイリアスサービスです。<br />
+          自分のドメインでメールアドレスを作れます。
+        </p>
 
         <div
           class="alias-example"
@@ -51,7 +54,7 @@
 
           <span class="alias-output">
             <small>生成されるアドレスの例</small>
-            <code>github-v1-vtabvg6w@m.example.com</code>
+            <code>github-v1-3fu6wja2@m.example.com</code>
           </span>
         </div>
 
@@ -76,11 +79,6 @@
 
       <section id="usage">
         <h2>使い方</h2>
-
-        <p class="section-intro">
-          最初の設定後は、アドレスを作るたびに Cloudflare
-          を操作する必要はありません。
-        </p>
 
         <div class="extension-demo">
           <div class="extension-demo-header">
@@ -119,11 +117,7 @@
               hidden
             ></p>
 
-            <div
-              class="extension-demo-result"
-              id="alias-demo-result"
-              aria-live="polite"
-            >
+            <div class="extension-demo-result" aria-live="polite">
               <small>生成されたアドレス</small>
               <code id="alias-demo-address"></code>
               <small>デモ用のアドレスです。</small>
@@ -145,8 +139,9 @@
 
             <div>
               <h3>拡張機能でアドレスを作る</h3>
+
               <p>
-                <code> github-v1-vtabvg6w@m.example.com </code>
+                <code> github-v1-3fu6wja2@m.example.com </code>
               </p>
             </div>
           </li>
@@ -169,14 +164,13 @@
         </ol>
 
         <div class="mechanism-note">
-          <p>発行したアドレスの一覧はあなたの端末にのみ保存されます。</p>
+          <p>発行したアドレスの一覧は保存しません。</p>
 
           <p>
-            アドレスには、秘密キーから作った短い認証タグが
-            含まれています。Worker はこのタグを検証します。
+            アドレスには秘密キーから作った短い認証タグが 含まれており、Worker
+            がこのタグを検証します。
+            自前のサーバーやデータベースは必要ありません。
           </p>
-
-          <p>アドレス管理用のデータベースや自前のサーバーは必要ありません。</p>
         </div>
       </section>
 
@@ -216,10 +210,7 @@
             <div>
               <h3>Cloudflare Worker を設定</h3>
 
-              <p>
-                拡張機能で作った秘密キーと、
-                転送先のメールアドレスを設定します。
-              </p>
+              <p>秘密キーと転送先のメールアドレスを設定します。</p>
 
               <div class="inline-actions">
                 <a
@@ -305,10 +296,7 @@
 
         const domain = "m.example.com";
 
-        /*
-         * 公開用のデモ専用キーです。
-         * 実際の mailias の秘密キーとは無関係です。
-         */
+        // 公開用のデモ専用キーです。
         const demoSecret = new Uint8Array([
           0x6d, 0x61, 0x69, 0x6c, 0x69, 0x61, 0x73, 0x2d, 0x64, 0x65, 0x6d,
           0x6f, 0x2d, 0x6b, 0x65, 0x79, 0x2d, 0x66, 0x6f, 0x72, 0x2d, 0x77,
@@ -373,9 +361,7 @@
             await crypto.subtle.sign("HMAC", key, message),
           );
 
-          const tag = encodeTag(signature);
-
-          return `${label}-v1-${tag}@${domain}`;
+          return `${label}-v1-${encodeTag(signature)}@${domain}`;
         }
 
         async function updateDemo() {
@@ -384,7 +370,6 @@
 
           try {
             const label = normalizeLabel(input.value);
-
             output.textContent = await generateAlias(label);
           } catch (e) {
             output.textContent = "";
