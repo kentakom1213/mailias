@@ -1,226 +1,413 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta
-            name="description"
-            content="mailias is a self-hosted email alias tool using your own domain and Cloudflare Workers."
-        />
-        <meta name="theme-color" content="#ffffff" />
-        <title>A different address for every service — mailias</title>
-        <link rel="icon" type="image/png" href="./icon.png" />
-        <link rel="stylesheet" href="./style.css" />
-    </head>
-    <body>
-        <a class="skip-link" href="#main">Skip to content</a>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="mailias lets you create a different email address for every service on your own domain. A Cloudflare Worker verifies each address and forwards valid messages to your inbox."
+    />
+    <meta name="theme-color" content="#ffffff" />
 
-        <header class="site-header">
-            <a class="site-name" href="./">
-                <img src="./icon.png" width="32" height="32" alt="" />
-                mailias
-            </a>
-            <nav aria-label="Navigation">
-                <a href="./ja/" lang="ja" hreflang="ja">日本語</a>
-                <a href="https://github.com/kentakom1213/mailias">
-                    GitHub <span aria-hidden="true">↗</span>
+    <title>mailias — A different address for every service.</title>
+
+    <link rel="icon" type="image/png" href="./icon.png" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <a class="site-name" href="#top">
+        <img src="./icon.png" width="32" height="32" alt="" />
+        mailias
+      </a>
+
+      <nav aria-label="Main navigation">
+        <a href="./ja/" lang="ja" hreflang="ja">日本語</a>
+        <a href="https://github.com/kentakom1213/mailias">
+          GitHub <span aria-hidden="true">↗</span>
+        </a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="intro" id="top">
+        <h1>A different address for every service.</h1>
+
+        <p class="summary">Create email addresses on your own domain.</p>
+
+        <div
+          class="alias-example"
+          aria-label="Example email address created with mailias"
+        >
+          <span class="alias-input">
+            <small>Label</small>
+            github
+          </span>
+
+          <span class="alias-arrow" aria-hidden="true">→</span>
+
+          <span class="alias-output">
+            <small>Example address</small>
+            <code>github-v1-vtabvg6w@m.example.com</code>
+          </span>
+        </div>
+
+        <div class="intro-links">
+          <a class="install-link" href="#setup"> View setup </a>
+
+          <a
+            class="text-link"
+            href="https://chromewebstore.google.com/detail/ndncanfdleghajopjmfjaidjabfahdbb/"
+          >
+            Chrome
+          </a>
+
+          <a
+            class="text-link"
+            href="https://addons.mozilla.org/ja/firefox/addon/04062be44a464eccb4d9/"
+          >
+            Firefox
+          </a>
+        </div>
+      </section>
+
+      <section id="usage">
+        <h2>Using mailias</h2>
+
+        <p class="section-intro">
+          After setup, you do not need to open Cloudflare every time you create
+          an address.
+        </p>
+
+        <div class="extension-demo">
+          <div class="extension-demo-header">
+            <img src="./icon.png" width="24" height="24" alt="" />
+            <strong>mailias</strong>
+          </div>
+
+          <form class="extension-demo-body" id="alias-demo" novalidate>
+            <label for="alias-demo-label">Label</label>
+
+            <input
+              class="extension-demo-input"
+              id="alias-demo-label"
+              name="label"
+              type="text"
+              value="github"
+              maxlength="48"
+              autocomplete="off"
+              autocapitalize="none"
+              spellcheck="false"
+              aria-describedby="alias-demo-help alias-demo-error"
+            />
+
+            <small class="extension-demo-help" id="alias-demo-help">
+              Use letters, numbers, and hyphens.
+            </small>
+
+            <button class="extension-demo-button" type="submit">
+              Create address
+            </button>
+
+            <p
+              class="extension-demo-error"
+              id="alias-demo-error"
+              role="alert"
+              hidden
+            ></p>
+
+            <div
+              class="extension-demo-result"
+              id="alias-demo-result"
+              aria-live="polite"
+            >
+              <small>Generated address</small>
+              <code id="alias-demo-address"></code>
+              <small>This is a demo address.</small>
+            </div>
+          </form>
+        </div>
+
+        <p class="usage-note">
+          Use the generated address when signing up for a service.
+        </p>
+      </section>
+
+      <section id="how-it-works">
+        <h2>How it works</h2>
+
+        <ol class="flow">
+          <li>
+            <span class="number">01</span>
+
+            <div>
+              <h3>Create an address in the extension</h3>
+              <p>
+                <code> github-v1-vtabvg6w@m.example.com </code>
+              </p>
+            </div>
+          </li>
+
+          <li>
+            <span class="number">02</span>
+
+            <div>
+              <h3>The Cloudflare Worker verifies the address</h3>
+            </div>
+          </li>
+
+          <li>
+            <span class="number">03</span>
+
+            <div>
+              <h3>Valid mail is forwarded to your usual inbox</h3>
+            </div>
+          </li>
+        </ol>
+
+        <div class="mechanism-note">
+          <p>The Worker does not store a list of issued addresses.</p>
+
+          <p>
+            Each address contains a short authentication tag derived from your
+            secret key. The Worker verifies this tag when mail arrives.
+          </p>
+
+          <p>There is no alias database or server for you to maintain.</p>
+        </div>
+      </section>
+
+      <section id="setup">
+        <h2>Setup</h2>
+
+        <p class="setup-intro">
+          mailias requires a domain managed with Cloudflare.
+        </p>
+
+        <ol class="setup-steps">
+          <li>
+            <span class="number">01</span>
+
+            <div>
+              <h3>Install the extension</h3>
+
+              <div class="inline-actions">
+                <a
+                  href="https://chromewebstore.google.com/detail/ndncanfdleghajopjmfjaidjabfahdbb/"
+                >
+                  Chrome
                 </a>
-            </nav>
-        </header>
 
-        <main id="main">
-            <section class="intro" id="top">
-                <h1>A different address for every service.</h1>
-                <p class="summary">
-                    Create email aliases on your own domain. Your
-                    <span class="term">Cloudflare Worker</span>
-                    verifies each address and forwards valid messages to your
-                    usual inbox.
-                </p>
+                <a
+                  href="https://addons.mozilla.org/ja/firefox/addon/04062be44a464eccb4d9/"
+                >
+                  Firefox
+                </a>
+              </div>
+            </div>
+          </li>
 
-                <div class="alias-example" aria-label="Example mailias address">
-                    <span class="alias-input"><small>Label</small>github</span>
-                    <span class="alias-arrow" aria-hidden="true">→</span>
-                    <span class="alias-output">
-                        <small>Example alias</small>
-                        <code>github-v1-vtabvg6w@m.example.com</code>
-                    </span>
-                </div>
-            </section>
+          <li>
+            <span class="number">02</span>
 
-            <section>
-                <h2>How it works</h2>
-                <ol class="flow">
-                    <li>
-                        <span class="number">01</span>
-                        <div>
-                            <h3>Create an address for a service</h3>
-                            <p>
-                                The extension generates a separate email address
-                                for each site.
-                            </p>
-                        </div>
-                    </li>
-                    <li>
-                        <span class="number">02</span>
-                        <div>
-                            <h3>
-                                Verify the address with your
-                                <span class="term">Cloudflare Worker</span>
-                            </h3>
-                            <p>
-                                When mail arrives, the Worker verifies the
-                                authentication tag included in the address.
-                            </p>
-                        </div>
-                    </li>
-                    <li>
-                        <span class="number">03</span>
-                        <div>
-                            <h3>Forward to your inbox</h3>
-                            <p>
-                                If the address is valid, the message is
-                                forwarded to the destination you configured.
-                            </p>
-                        </div>
-                    </li>
-                </ol>
+            <div>
+              <h3>Configure the Cloudflare Worker</h3>
 
-                <ul class="flow-notes" role="list">
-                    <li>Run it with your own domain and Cloudflare.</li>
-                    <li>
-                        There is no need to store a list of issued aliases on
-                        the server.
-                    </li>
-                </ul>
-            </section>
+              <p>
+                Set the secret key created by the extension and the email
+                address where mail should be forwarded.
+              </p>
 
-            <section id="setup">
-                <h2>Get started</h2>
-                <p class="setup-intro">
-                    You need a domain managed with Cloudflare and a destination
-                    email address.
-                </p>
+              <div class="inline-actions">
+                <a
+                  href="https://deploy.workers.cloudflare.com/?url=https://github.com/kentakom1213/mailias"
+                >
+                  Deploy Worker
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </div>
+            </div>
+          </li>
 
-                <ol class="setup-steps">
-                    <li>
-                        <span class="number">01</span>
-                        <div>
-                            <h3>Install the extension</h3>
-                            <p>
-                                Install mailias for Chrome or Firefox and open
-                                its settings.
-                            </p>
-                            <div class="inline-actions">
-                                <a
-                                    href="https://chromewebstore.google.com/detail/ndncanfdleghajopjmfjaidjabfahdbb/"
-                                    >Get it for Chrome</a
-                                >
-                                <a
-                                    href="https://addons.mozilla.org/ja/firefox/addon/04062be44a464eccb4d9/"
-                                    >Get it for Firefox</a
-                                >
-                            </div>
-                        </div>
-                    </li>
+          <li>
+            <span class="number">03</span>
 
-                    <li>
-                        <span class="number">02</span>
-                        <div>
-                            <h3>Create and back up your secret key</h3>
-                            <p>
-                                Generate a secret key in the extension and store
-                                it somewhere safe, such as a password manager.
-                                Keep it backed up: if you lose it, you cannot
-                                generate the same addresses again.
-                            </p>
-                        </div>
-                    </li>
+            <div>
+              <h3>Configure Email Routing</h3>
 
-                    <li>
-                        <span class="number">03</span>
-                        <div>
-                            <h3>Deploy and configure your Worker</h3>
-                            <p>
-                                Deploy the Worker and configure your secret key
-                                and destination email address.
-                            </p>
-                            <div class="inline-actions">
-                                <a
-                                    href="https://deploy.workers.cloudflare.com/?url=https://github.com/kentakom1213/mailias"
-                                    >Deploy Worker to Cloudflare
-                                    <span aria-hidden="true">↗</span></a
-                                >
-                            </div>
-                        </div>
-                    </li>
+              <p>
+                Route the catch-all address for your mail domain to the mailias
+                Worker.
+              </p>
+            </div>
+          </li>
+        </ol>
 
-                    <li>
-                        <span class="number">04</span>
-                        <div>
-                            <h3>Set up Email Routing</h3>
-                            <p>
-                                Configure the catch-all rule for your mail
-                                domain to send messages to your
-                                <span class="term">mailias Worker</span>.
-                            </p>
-                        </div>
-                    </li>
+        <p>
+          <a
+            class="text-link"
+            href="https://github.com/kentakom1213/mailias/blob/main/SETUP.md"
+          >
+            View the detailed setup guide
+            <span aria-hidden="true">→</span>
+          </a>
+        </p>
+      </section>
 
-                    <li>
-                        <span class="number">05</span>
-                        <div>
-                            <h3>Create an address for a service</h3>
-                            <p>
-                                Enter a recognizable label, generate an address,
-                                and use it when registering with the service.
-                            </p>
-                        </div>
-                    </li>
-                </ol>
+      <section id="technical">
+        <h2>Technical information</h2>
 
-                <p>
-                    <a
-                        class="text-link"
-                        href="https://github.com/kentakom1213/mailias/blob/main/SETUP.md"
-                        >Detailed setup guide
-                        <span aria-hidden="true">→</span></a
-                    >
-                </p>
-            </section>
+        <ul class="document-links">
+          <li>
+            <a
+              href="https://github.com/kentakom1213/mailias/blob/main/docs/security-model.md"
+            >
+              Security model
+              <span aria-hidden="true">→</span>
+            </a>
 
-            <section>
-                <h2>Documentation</h2>
-                <ul class="document-links">
-                    <li>
-                        <a
-                            href="https://github.com/kentakom1213/mailias/blob/main/docs/security-model.md"
-                            >Security model <span aria-hidden="true">→</span></a
-                        >
-                        <span>Secret keys and address tags</span>
-                    </li>
-                    <li>
-                        <a
-                            href="https://github.com/kentakom1213/mailias/blob/main/SPEC.md"
-                            >Protocol specification
-                            <span aria-hidden="true">→</span></a
-                        >
-                        <span>Address format and verification</span>
-                    </li>
-                    <li>
-                        <a href="https://github.com/kentakom1213/mailias"
-                            >GitHub <span aria-hidden="true">→</span></a
-                        >
-                        <span>Source code and issues</span>
-                    </li>
-                </ul>
-            </section>
-        </main>
+            <span>Secret keys and authentication tags</span>
+          </li>
 
-        <footer>
-            <span>© mailias 2026</span>
-            <a href="./privacy-policy/">Privacy policy</a>
-            <a href="https://github.com/kentakom1213/mailias">GitHub</a>
-        </footer>
-    </body>
+          <li>
+            <a href="https://github.com/kentakom1213/mailias/blob/main/SPEC.md">
+              Protocol specification
+              <span aria-hidden="true">→</span>
+            </a>
+
+            <span>Address format and verification</span>
+          </li>
+
+          <li>
+            <a href="https://github.com/kentakom1213/mailias">
+              GitHub
+              <span aria-hidden="true">→</span>
+            </a>
+
+            <span>Source code and issues</span>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <span>© mailias 2026</span>
+      <a href="./privacy-policy/"> Privacy policy </a>
+      <a href="https://github.com/kentakom1213/mailias"> GitHub </a>
+    </footer>
+
+    <script>
+      (() => {
+        const form = document.querySelector("#alias-demo");
+        const input = document.querySelector("#alias-demo-label");
+        const output = document.querySelector("#alias-demo-address");
+        const error = document.querySelector("#alias-demo-error");
+
+        const domain = "m.example.com";
+
+        /*
+         * Public demo key.
+         * It is unrelated to any real mailias secret key.
+         */
+        const demoSecret = new Uint8Array([
+          0x6d, 0x61, 0x69, 0x6c, 0x69, 0x61, 0x73, 0x2d, 0x64, 0x65, 0x6d,
+          0x6f, 0x2d, 0x6b, 0x65, 0x79, 0x2d, 0x66, 0x6f, 0x72, 0x2d, 0x77,
+          0x65, 0x62, 0x73, 0x69, 0x74, 0x65, 0x2d, 0x76, 0x31, 0x21,
+        ]);
+
+        const tagAlphabet = "023456789abcdefghjkmnpqrstuvwxyz";
+
+        function normalizeLabel(value) {
+          const label = value.trim().toLowerCase();
+
+          if (label.length === 0) {
+            throw new Error("Enter a label.");
+          }
+
+          if (label.length > 48) {
+            throw new Error("The label must be 48 characters or fewer.");
+          }
+
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(label)) {
+            throw new Error("Use letters, numbers, and hyphens.");
+          }
+
+          return label;
+        }
+
+        function encodeTag(bytes) {
+          let bits = 0n;
+
+          for (const byte of bytes.slice(0, 5)) {
+            bits = (bits << 8n) | BigInt(byte);
+          }
+
+          let tag = "";
+
+          for (let shift = 35n; shift >= 0n; shift -= 5n) {
+            const index = Number((bits >> shift) & 31n);
+
+            tag += tagAlphabet[index];
+          }
+
+          return tag;
+        }
+
+        async function generateAlias(label) {
+          const key = await crypto.subtle.importKey(
+            "raw",
+            demoSecret,
+            {
+              name: "HMAC",
+              hash: "SHA-256",
+            },
+            false,
+            ["sign"],
+          );
+
+          const message = new TextEncoder().encode(
+            `mailias/v1\0${domain}\0${label}`,
+          );
+
+          const signature = new Uint8Array(
+            await crypto.subtle.sign("HMAC", key, message),
+          );
+
+          const tag = encodeTag(signature);
+
+          return `${label}-v1-${tag}@${domain}`;
+        }
+
+        async function updateDemo() {
+          error.hidden = true;
+          error.textContent = "";
+
+          try {
+            const label = normalizeLabel(input.value);
+
+            output.textContent = await generateAlias(label);
+          } catch (e) {
+            output.textContent = "";
+
+            error.textContent =
+              e instanceof Error
+                ? e.message
+                : "Could not generate the address.";
+
+            error.hidden = false;
+          }
+        }
+
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          updateDemo();
+        });
+
+        updateDemo();
+      })();
+    </script>
+  </body>
 </html>
