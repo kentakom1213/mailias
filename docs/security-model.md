@@ -2,7 +2,7 @@
 
 ## Recovery
 
-The generated 32-byte recovery key must be stored in a password manager．New setup is completed only after the displayed value is cleared and the user pastes it back from the password manager．
+The generated 32-byte recovery key must be stored in a password manager．The user confirms that the key has been saved before the extension imports it and clears the displayed value．This confirmation does not verify the password-manager entry by requiring it to be pasted back．
 
 The extension imports the key as a non-extractable HMAC-SHA-256 `CryptoKey` and persists it in extension-owned IndexedDB．Cloudflare hides Worker Secret values after configuration．If both the password-manager entry and extension database are lost，the key and all existing aliases are unrecoverable．
 
@@ -25,9 +25,13 @@ The extension imports the key as a non-extractable HMAC-SHA-256 `CryptoKey` and 
 
 ## Mitigations
 
-- No content scripts，tab access，remote code，analytics，or telemetry are included．
+- No content scripts，remote code，analytics，or telemetry are included．The popup uses `activeTab` to determine the current site domain．It does not persist the full URL or send it to the Worker．
 - The background context alone accesses the CryptoKey and exposes only fixed alias-generation operations．
 - The extension never exposes an arbitrary HMAC operation or recovery-key export．
 - Worker logs exclude keys，recipients，forwarding destinations，and message contents．
 - `/health` exposes only configuration booleans，protocol version，and a domain-bound 64-bit keyId．
 - Protocol behavior is covered by implementation-independent HMAC test vectors．
+
+Labels and mail domains remain visible in every alias．The local mapping export also reveals saved site/label associations and their timestamps．
+
+For backup，migration，and stopping an alias，see the [user guide](https://github.com/kentakom1213/mailias/blob/main/SETUP.md)．For data-handling disclosures，see the [privacy policy](https://mailias.pwll.dev/privacy-policy/)．

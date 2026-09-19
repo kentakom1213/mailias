@@ -17,24 +17,26 @@ The tag provides lightweight alias validation. It is not a high-strength authent
 
 Chrome Desktop and Firefox Desktop are the v1 clients. They share all application code and use separate Manifest V3 files for their different background execution models.
 
-The options page is the setup home and later becomes the alias-management page. New setup requires this sequence:
+### Key storage and setup state
 
-1. Connect a deployed Worker HTTPS origin.
-2. Select the mail domain.
-3. Generate the recovery key locally or restore an existing key.
-4. Save the recovery key in a password manager.
-5. Import it as a non-extractable HMAC-SHA-256 `CryptoKey` with only the `sign` usage.
-6. Save and read back the key from extension-owned IndexedDB.
-7. Verify it by calculating the expected `keyId`.
-8. Configure `MAILIAS_SECRET` and `MY_ADDRESS` in Cloudflare.
-9. Configure the Email Routing catch-all rule and confirm that step in the extension.
-10. Check `/health` and require both Worker bindings plus a matching `keyId`.
+The key is imported as a non-extractable HMAC-SHA-256 `CryptoKey` with only the `sign` usage，persisted in extension-owned IndexedDB，and read back to verify its domain-bound `keyId`．
 
-When all setup statuses pass, the extension persists `setupComplete = true` and hides the setup UI. The options page then shows alias management only. The setup UI is shown again only after reset.
+Setup completion requires all of the following:
+
+- A stored key，mail domain，and `keyId`．
+- A recorded backup confirmation or restoration from an existing key．Backup confirmation is a user assertion，not a password-manager round-trip check．
+- User confirmation that Email Routing is configured．
+- A successful Worker health check with protocol version `v1`，both runtime bindings configured，and a matching `keyId`．
+
+Only then is `setupComplete = true` persisted．A temporary Worker outage does not clear it．Reset removes the local setup state and key．Email Routing confirmation is not an automated test of mail delivery．
 
 The raw recovery key is not persisted by the extension and cannot be exported later. The password-manager copy is the only recovery source.
 
-The extension stores `domain`, `keyId`, schema version, optional Worker origin, Email Routing confirmation, setup-completion state, and site/label mappings in extension-owned storage. It does not store generated alias addresses, browsing history, or usage history. It does not inspect active tabs or inject content scripts.
+### Local data and permissions
+
+The extension stores `domain`, `keyId`, schema version, optional Worker origin, Email Routing confirmation, setup-completion state, and site/label mappings in extension-owned storage. Each saved label also has an identifier, creation time, and latest copy time (`lastUsedAt`). Generated alias addresses are calculated on demand. When the popup opens, `activeTab` access is used to derive the site's registrable domain from its URL; the full URL and browsing history are not persisted. No content scripts are injected.
+
+Required permissions are `storage` and `activeTab`. Optional HTTPS host access is requested for the configured Worker origin to perform health checks. Mapping exports contain the mail domain, site domains, labels, and their timestamps, but no secret key. Removing a mapping does not revoke the corresponding alias.
 
 ## Worker
 

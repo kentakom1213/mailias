@@ -164,12 +164,8 @@
         </ol>
 
         <div class="mechanism-note">
-          <p>発行したアドレスの一覧は保存しません。</p>
-
           <p>
-            アドレスには秘密キーから作った短い認証タグが 含まれており、Worker
-            がこのタグを検証します。
-            自前のサーバーやデータベースは必要ありません。
+            アドレスには，秘密キーから作った短い認証タグが含まれています．Worker はこのタグを検証するため，発行済みアドレスの一覧を持つ必要がありません．自前のサーバーやデータベースを管理せずに利用できます．
           </p>
         </div>
       </section>
@@ -178,7 +174,7 @@
         <h2>設定</h2>
 
         <p class="setup-intro">
-          mailias を使うには、Cloudflare で管理している独自ドメインが必要です。
+          Cloudflare で管理しているドメインが必要です．
         </p>
 
         <ol class="setup-steps">
@@ -206,30 +202,16 @@
 
           <li>
             <span class="number">02</span>
-
             <div>
-              <h3>Cloudflare Worker を設定</h3>
-
-              <p>秘密キーと転送先のメールアドレスを設定します。</p>
-
-              <div class="inline-actions">
-                <a
-                  href="https://deploy.workers.cloudflare.com/?url=https://github.com/kentakom1213/mailias"
-                >
-                  Worker をデプロイ
-                  <span aria-hidden="true">↗</span>
-                </a>
-              </div>
+              <h3>拡張の案内に沿って設定</h3>
+              <p>Settings を開き，画面の案内に沿って Worker とメール転送を設定します．秘密キーはパスワードマネージャーに保存してください．</p>
             </div>
           </li>
-
           <li>
             <span class="number">03</span>
-
             <div>
-              <h3>Email Routing を設定</h3>
-
-              <p>対象ドメインの catch-all を mailias Worker に接続します。</p>
+              <h3>テストメールで確認</h3>
+              <p>エイリアスを作成し，別のメールアカウントから送信して転送先に届くことを確認します．</p>
             </div>
           </li>
         </ol>
@@ -239,7 +221,7 @@
             class="text-link"
             href="https://github.com/kentakom1213/mailias/blob/main/SETUP-ja.md"
           >
-            詳しい設定手順を見る
+            事前準備・バックアップ・移行について
             <span aria-hidden="true">→</span>
           </a>
         </p>

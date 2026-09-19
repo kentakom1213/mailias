@@ -70,7 +70,7 @@
 
           <a
             class="text-link"
-            href="https://addons.mozilla.org/ja/firefox/addon/04062be44a464eccb4d9/"
+            href="https://addons.mozilla.org/firefox/addon/04062be44a464eccb4d9/"
           >
             Firefox
           </a>
@@ -160,12 +160,11 @@
         </ol>
 
         <div class="mechanism-note">
-          <p>The Worker does not store a list of issued addresses.</p>
-
           <p>
             Each address contains a short authentication tag derived from your
-            secret key. The Worker verifies the tag, so there is no alias
-            database or server for you to maintain.
+            secret key. The Worker verifies this tag, so it does not need a list
+            of issued addresses. You can use mailias without managing your own
+            server or database.
           </p>
         </div>
       </section>
@@ -174,7 +173,7 @@
         <h2>Setup</h2>
 
         <p class="setup-intro">
-          mailias requires a domain managed with Cloudflare.
+          You need a domain managed by Cloudflare.
         </p>
 
         <ol class="setup-steps">
@@ -192,7 +191,7 @@
                 </a>
 
                 <a
-                  href="https://addons.mozilla.org/ja/firefox/addon/04062be44a464eccb4d9/"
+                  href="https://addons.mozilla.org/firefox/addon/04062be44a464eccb4d9/"
                 >
                   Firefox
                 </a>
@@ -202,33 +201,16 @@
 
           <li>
             <span class="number">02</span>
-
             <div>
-              <h3>Configure the Cloudflare Worker</h3>
-
-              <p>Set the secret key and forwarding address.</p>
-
-              <div class="inline-actions">
-                <a
-                  href="https://deploy.workers.cloudflare.com/?url=https://github.com/kentakom1213/mailias"
-                >
-                  Deploy Worker
-                  <span aria-hidden="true">↗</span>
-                </a>
-              </div>
+              <h3>Follow setup in the extension</h3>
+              <p>Open Settings and follow the instructions to configure your Worker and mail forwarding. Save the secret key in your password manager.</p>
             </div>
           </li>
-
           <li>
             <span class="number">03</span>
-
             <div>
-              <h3>Configure Email Routing</h3>
-
-              <p>
-                Route the catch-all address for your mail domain to the mailias
-                Worker.
-              </p>
+              <h3>Test mail delivery</h3>
+              <p>Create an alias, send a message from another account, and confirm delivery to your destination inbox.</p>
             </div>
           </li>
         </ol>
@@ -238,7 +220,7 @@
             class="text-link"
             href="https://github.com/kentakom1213/mailias/blob/main/SETUP.md"
           >
-            View the detailed setup guide
+            Preparation, backup, and migration
             <span aria-hidden="true">→</span>
           </a>
         </p>

@@ -15,13 +15,11 @@ pnpm check
 pnpm build
 ```
 
-Package both extensions:
+Build outputs are written to `dist/chrome`，`dist/firefox`，and `dist/worker`．For local Worker development，copy `.dev.vars.example` to `.dev.vars` and fill in test values．Never commit `.dev.vars`．
 
-```sh
-pnpm package:extensions
-```
+For a local Chrome build，open `chrome://extensions`，enable Developer mode，and load `dist/chrome` with **Load unpacked**．For a temporary Firefox build，open `about:debugging#/runtime/this-firefox`，select **Load Temporary Add-on**，and choose `dist/firefox/manifest.json`．
 
-Generated files under `dist/` are not committed．
+Generated files under `dist/` are not committed．For release packaging and store submission，see [Releasing](docs/releasing.md)．
 
 ## Protocol compatibility
 
