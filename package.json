@@ -41,6 +41,6 @@
     "wrangler": "latest"
   },
   "dependencies": {
-    "tldts": "7.4.12"
+    "tldts": "7.4.16"
   }
 }
